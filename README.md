@@ -29,5 +29,3 @@ Campus Food Ordering Web System for Cavendish University. Built with PHP, MySQL,
 | **XAMPP/WAMP** | Local development server |
 
 
-## 📁 Folder Structure
-
