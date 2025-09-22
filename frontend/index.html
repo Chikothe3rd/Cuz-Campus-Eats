@@ -2,132 +2,115 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Campus Eats — Welcome</title>
+
+    <!-- Google font -->
     <link
-      as="style"
-      href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
-      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-      rel="stylesheet"
-    />
-    <title>Campus Eats - Welcome</title>
-    <link href="/assets/Images/Gemini_Generated_Image_8niz9d8niz9d8niz-removebg-preview.png" rel="icon" type="image/x-icon" />
 
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-
-    <!-- Your custom stylesheet -->
+    <!-- Local stylesheet -->
     <link rel="stylesheet" href="index.css" />
   </head>
+  <body>
+    <div class="stage">
+      <div class="card" role="region" aria-label="Welcome card">
+        <div class="card-head">
+          <div class="brand">
+            <div class="dot">CE</div>
+            <div>
+              <div class="name">Campus Eats</div>
+              <div style="font-size: 12px; color: var(--muted)">
+                Food on campus
+              </div>
+            </div>
+          </div>
 
-  <body
-    class="relative flex size-full min-h-screen flex-col bg-[var(--secondary-color)] group/design-root overflow-x-hidden"
-  >
-    <div
-      class="absolute top-0 left-0 w-full h-full bg-cover bg-center opacity-10"
-      style="
-        background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAsl5GLSi_WX9gtm2B-xW3mEB6VpVee4tJq7wJBLNR0uADhmlIH6UQJUPgNV0YiuxjrXNZ_7XYHP_GEOz6HakD_Pb_5UZdOMoF1Yy6DvsgRjptuWd3JyON8bFpEQ06K4a3UquFcgMEIJoZM4YHpWp3wtJz75AcBrDD0TkC_mx-0av5mq0jDxvKePgdN_ilgx9DEcTb-IsyY5LtqvOClj2saY4NsU_XL8d-bWBWFGBRGD-i366v6Of6-vdc28faOE_di0g8HtZcW9-I');
-      "
-    ></div>
+          <nav class="navlinks" aria-label="Main navigation">
+            <a href="#">Home</a>
+            <a href="#">Menu</a>
+            <a href="#">Locations</a>
+            <a href="#">Contact</a>
+          </nav>
 
-    <div class="relative layout-container flex h-full grow flex-col z-10">
-      <header
-        class="flex items-center justify-between whitespace-nowrap px-10 py-4"
-      >
-        <div class="flex items-center gap-3 text-[var(--text-primary)]">
-          <svg
-            class="h-8 w-8 text-[var(--primary-color)]"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.59V14H8v-2h3v-1.59c0-2.34 1.91-4.25 4.25-4.25h.75v2h-.75c-1.24 0-2.25.99-2.25 2.22V12h3.03l-.53 2H13v3.59h-2z"
-            ></path>
-          </svg>
-          <h2
-            class="text-[var(--text-primary)] text-2xl font-bold leading-tight tracking-tight"
-          >
-            Campus Eats
-          </h2>
+          <div class="cta-row">
+            <button class="btn primary" id="top-signup">Sign Up</button>
+            <button class="btn ghost" id="top-login">Log In</button>
+          </div>
         </div>
 
-        <div class="flex items-center gap-6">
-          <a
-            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
-            href="#"
-            >Home</a
-          >
-          <a
-            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
-            href="#"
-            >Menu</a
-          >
-          <a
-            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
-            href="#"
-            >Locations</a
-          >
-          <a
-            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
-            href="#"
-            >Contact</a
-          >
-        </div>
-
-        <div class="flex gap-4">
-          <button
-            class="flex min-w-[96px] items-center justify-center rounded-md h-10 px-5 bg-[var(--primary-color)] text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors"
-          >
-            <span>Sign Up</span>
-          </button>
-          <button
-            class="flex min-w-[96px] items-center justify-center rounded-md h-10 px-5 bg-white text-[var(--text-primary)] text-sm font-semibold shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            <span>Log In</span>
-          </button>
-        </div>
-      </header>
-
-      <main
-        class="flex flex-1 items-center justify-center text-center px-4 py-20"
-      >
-        <div class="w-full max-w-2xl">
-          <h1
-            class="text-5xl font-bold text-[var(--text-primary)] tracking-tighter sm:text-6xl md:text-7xl"
-          >
-            Welcome to Campus Eats
-          </h1>
-
-          <p class="mt-6 max-w-lg mx-auto text-lg text-[var(--text-secondary)]">
+        <div class="hero">
+          <h1 class="title">Welcome to Campus Eats</h1>
+          <p class="subtitle">
             Your one-stop solution for delicious meals on campus. Order from
             your favorite university restaurants and enjoy quick, hassle-free
             pickups.
           </p>
 
-          <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              class="flex w-full sm:w-auto items-center justify-center rounded-md h-12 px-8 bg-[var(--primary-color)] text-white text-base font-semibold shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105"
-            >
-              <span class="material-symbols-outlined mr-2">person_add</span>
-              <span>Sign Up for Free</span>
+          <div class="cta-actions">
+            <button class="btn primary" id="hero-signup">
+              Sign Up for Free
             </button>
-
-            <button
-              class="flex w-full sm:w-auto items-center justify-center rounded-md h-12 px-8 bg-white text-[var(--text-primary)] text-base font-semibold shadow-lg ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-transform transform hover:scale-105"
-            >
-              <span class="material-symbols-outlined mr-2">login</span>
-              <span>Log In to Your Account</span>
+            <button class="btn white" id="hero-login">
+              Log In to Your Account
             </button>
           </div>
         </div>
-      </main>
+
+        <div class="card-foot">
+          Available in select campuses • Secure payments • Contactless pickup
+        </div>
+      </div>
     </div>
 
-    <!-- Your JS -->
+    <!-- Login / Signup modal -->
+    <div class="modal-backdrop" id="modal">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <button
+          id="close-modal"
+          style="
+            float: right;
+            background: transparent;
+            border: 0;
+            font-size: 16px;
+            cursor: pointer;
+          "
+        >
+          ✕
+        </button>
+        <h4 id="modal-title">Log in</h4>
+        <form id="modal-form">
+          <div class="field">
+            <label>Email or phone</label>
+            <input
+              id="m-lem"
+              type="text"
+              placeholder="you@domain.com or +260 96 ..."
+              required
+            />
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input id="m-lpw" type="password" placeholder="••••••••" required />
+          </div>
+          <div class="row">
+            <button type="button" class="btn ghost" id="switch-to-signup">
+              Switch to Sign Up
+            </button>
+            <button type="submit" class="btn primary">Continue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Local script -->
     <script src="script.js" defer></script>
   </body>
 </html>

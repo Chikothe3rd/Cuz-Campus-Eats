@@ -1,24 +1,46 @@
-:root {
-  --primary-color: #135bec;
-  --secondary-color: #f8f9fc;
-  --text-primary: #0d121b;
-  --text-secondary: #4a5568;
-}
+:root{--blue:#2563EB;--bg:#f3f6fb;--card:#ffffff;--muted:#6b7280}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Roboto,Arial;color:#0b1220;background:var(--bg)}
 
-/* Base / font */
-html, body {
-  height: 100%;
-}
-body {
-  margin: 0;
-  font-family: Inter, "Noto Sans", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+/* Centered large card */
+.stage{min-height:100vh;display:grid;place-items:center;padding:28px}
+.card{width:min(1100px,95%);background:var(--card);border-radius:14px;box-shadow:0 20px 40px rgba(10,25,47,0.12);overflow:hidden}
 
-/* Optional small helper styles if you want to override or add extras */
-.size-full { width: 100%; height: 100%; }
+/* top nav inside card */
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:20px 36px;border-bottom:1px solid #eef2f6;background:linear-gradient(180deg,#fff,#fbfdff)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .dot{width:34px;height:34px;border-radius:8px;background:var(--blue);display:grid;place-items:center;color:#fff;font-weight:700}
+.brand .name{font-weight:700}
+.navlinks{display:flex;gap:22px;align-items:center;color:var(--muted)}
+.navlinks a{color:var(--muted);text-decoration:none;font-size:14px}
 
-/* If you plan to add custom components or adapt Tailwind utilities, add them here. */
-.bg-primary { background-color: var(--primary-color); }
-.bg-secondary { background-color: var(--secondary-color); } 
+.cta-row{display:flex;gap:12px;align-items:center}
+.btn{padding:9px 14px;border-radius:8px;font-weight:700;border:0;cursor:pointer}
+.btn.primary{background:var(--blue);color:#fff;box-shadow:0 8px 20px rgba(37,99,235,0.18)}
+.btn.ghost{background:#fff;border:1px solid #e6e9ef;color:#111}
+
+/* Hero */
+.hero{padding:56px 80px 70px;text-align:center}
+.title{font-size:56px;line-height:1.02;margin:6px 0 18px;font-weight:800}
+.subtitle{max-width:760px;margin:0 auto;color:var(--muted);font-size:16px}
+
+.cta-actions{margin-top:28px;display:flex;gap:14px;justify-content:center}
+.cta-actions .btn.white{background:#fff;border:1px solid #e6e9ef;box-shadow:0 12px 24px rgba(15,23,42,0.06)}
+
+/* Footer area inside card (very subtle) */
+.card-foot{padding:18px 36px;border-top:1px solid #f1f5f9;color:var(--muted);font-size:13px}
+
+/* Modal (simple) */
+.modal-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(8,12,20,0.45);z-index:60}
+.modal{width:360px;background:#fff;padding:20px;border-radius:12px;box-shadow:0 20px 50px rgba(5,10,30,0.4)}
+.modal h4{margin:0 0 8px;font-size:18px}
+.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.field input{padding:10px;border-radius:8px;border:1px solid #e6e9ef}
+.modal .row{display:flex;gap:10px;margin-top:12px}
+
+/* Responsive */
+@media (max-width:720px){
+  .card-head{padding:14px}
+  .hero{padding:34px 20px}
+  .title{font-size:36px}
+}
