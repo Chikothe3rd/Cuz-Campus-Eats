@@ -1,0 +1,24 @@
+:root {
+  --primary-color: #135bec;
+  --secondary-color: #f8f9fc;
+  --text-primary: #0d121b;
+  --text-secondary: #4a5568;
+}
+
+/* Base / font */
+html, body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Inter, "Noto Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optional small helper styles if you want to override or add extras */
+.size-full { width: 100%; height: 100%; }
+
+/* If you plan to add custom components or adapt Tailwind utilities, add them here. */
+.bg-primary { background-color: var(--primary-color); }
+.bg-secondary { background-color: var(--secondary-color); } 

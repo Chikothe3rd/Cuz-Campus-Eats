@@ -14,20 +14,17 @@
       rel="stylesheet"
     />
     <title>Campus Eats - Welcome</title>
-    <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon" />
+    <link href="/assets/Images/Gemini_Generated_Image_8niz9d8niz9d8niz-removebg-preview.png" rel="icon" type="image/x-icon" />
+
+    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style type="text/tailwindcss">
-      :root {
-        --primary-color: #135bec;
-        --secondary-color: #f8f9fc;
-        --text-primary: #0d121b;
-        --text-secondary: #4a5568;
-      }
-    </style>
+
+    <!-- Your custom stylesheet -->
+    <link rel="stylesheet" href="index.css" />
   </head>
+
   <body
     class="relative flex size-full min-h-screen flex-col bg-[var(--secondary-color)] group/design-root overflow-x-hidden"
-    style="font-family: Inter, 'Noto Sans', sans-serif"
   >
     <div
       class="absolute top-0 left-0 w-full h-full bg-cover bg-center opacity-10"
@@ -35,6 +32,7 @@
         background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAsl5GLSi_WX9gtm2B-xW3mEB6VpVee4tJq7wJBLNR0uADhmlIH6UQJUPgNV0YiuxjrXNZ_7XYHP_GEOz6HakD_Pb_5UZdOMoF1Yy6DvsgRjptuWd3JyON8bFpEQ06K4a3UquFcgMEIJoZM4YHpWp3wtJz75AcBrDD0TkC_mx-0av5mq0jDxvKePgdN_ilgx9DEcTb-IsyY5LtqvOClj2saY4NsU_XL8d-bWBWFGBRGD-i366v6Of6-vdc28faOE_di0g8HtZcW9-I');
       "
     ></div>
+
     <div class="relative layout-container flex h-full grow flex-col z-10">
       <header
         class="flex items-center justify-between whitespace-nowrap px-10 py-4"
@@ -57,6 +55,29 @@
           </h2>
         </div>
 
+        <div class="flex items-center gap-6">
+          <a
+            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
+            href="#"
+            >Home</a
+          >
+          <a
+            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
+            href="#"
+            >Menu</a
+          >
+          <a
+            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
+            href="#"
+            >Locations</a
+          >
+          <a
+            class="text-gray-600 hover:text-[var(--primary-color)] text-sm font-medium transition-colors"
+            href="#"
+            >Contact</a
+          >
+        </div>
+
         <div class="flex gap-4">
           <button
             class="flex min-w-[96px] items-center justify-center rounded-md h-10 px-5 bg-[var(--primary-color)] text-white text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors"
@@ -70,6 +91,7 @@
           </button>
         </div>
       </header>
+
       <main
         class="flex flex-1 items-center justify-center text-center px-4 py-20"
       >
@@ -79,27 +101,33 @@
           >
             Welcome to Campus Eats
           </h1>
+
           <p class="mt-6 max-w-lg mx-auto text-lg text-[var(--text-secondary)]">
-            Your one stop solution for delicious meals on campus. Order from
-            your favorite university restaurant, student vendors and enjoy
-            quick, hassle free pickups.
+            Your one-stop solution for delicious meals on campus. Order from
+            your favorite university restaurants and enjoy quick, hassle-free
+            pickups.
           </p>
+
           <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <button
               class="flex w-full sm:w-auto items-center justify-center rounded-md h-12 px-8 bg-[var(--primary-color)] text-white text-base font-semibold shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105"
             >
-              <span class="material-symbols-outlined mr-2"></span>
+              <span class="material-symbols-outlined mr-2">person_add</span>
               <span>Sign Up for Free</span>
             </button>
+
             <button
               class="flex w-full sm:w-auto items-center justify-center rounded-md h-12 px-8 bg-white text-[var(--text-primary)] text-base font-semibold shadow-lg ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-transform transform hover:scale-105"
             >
-              <span class="material-symbols-outlined mr-2"></span>
+              <span class="material-symbols-outlined mr-2">login</span>
               <span>Log In to Your Account</span>
             </button>
           </div>
         </div>
       </main>
     </div>
+
+    <!-- Your JS -->
+    <script src="script.js" defer></script>
   </body>
 </html>
