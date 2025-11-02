@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors - University Campus Theme */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    /* Cards */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --card-hover: 220 14% 96%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary - University Blue/Indigo */
+    --primary: 239 84% 48%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 239 84% 42%;
+    --primary-light: 239 84% 95%;
+
+    /* Accent - Warm Orange for Food/Energy */
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 25 95% 47%;
+    --accent-light: 25 95% 95%;
+
+    /* Secondary */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Muted */
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Success - Order completed */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 71% 95%;
+
+    /* Warning - Order pending */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 38 92% 95%;
+
+    /* Info - Order in progress */
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+    --info-light: 199 89% 95%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Status colors for order lifecycle */
+    --status-pending: 38 92% 50%;
+    --status-accepted: 199 89% 48%;
+    --status-preparing: 271 81% 56%;
+    --status-delivering: 25 95% 53%;
+    --status-delivered: 142 71% 45%;
+
+    /* Borders & inputs */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 239 84% 48%;
+
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(239 84% 48%), hsl(271 81% 56%));
+    --gradient-accent: linear-gradient(135deg, hsl(25 95% 53%), hsl(38 92% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(239 84% 48%) 0%, hsl(271 81% 56%) 50%, hsl(25 95% 53%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-primary: 0 10px 30px -10px hsl(239 84% 48% / 0.3);
+    --shadow-accent: 0 10px 30px -10px hsl(25 95% 53% / 0.3);
+
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+    --card-hover: 222 47% 17%;
+    --popover: 222 47% 14%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 239 84% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 239 84% 55%;
+    --primary-light: 239 84% 20%;
+    --accent: 25 95% 60%;
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 25 95% 55%;
+    --accent-light: 25 95% 20%;
+    --secondary: 217 33% 18%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 65%;
+    --success: 142 71% 50%;
+    --success-light: 142 71% 20%;
+    --warning: 38 92% 55%;
+    --warning-light: 38 92% 20%;
+    --info: 199 89% 55%;
+    --info-light: 199 89% 20%;
+    --destructive: 0 63% 31%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 239 84% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
