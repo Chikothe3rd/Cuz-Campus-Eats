@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import DatabaseTest from "./pages/DatabaseTest";
 import BuyerDashboard from "./pages/buyer/BuyerDashboard";
 import Vendors from "./pages/buyer/Vendors";
 import BuyerVendorMenu from "./pages/buyer/VendorMenu";
