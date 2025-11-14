@@ -37,25 +37,64 @@ const App = () => {
             <Route path="/db-test" element={<DatabaseTest />} />
             
             {/* Buyer Routes */}
-            <Route path="/buyer" element={<BuyerDashboard />} />
-            <Route path="/buyer/vendors" element={<Vendors />} />
-            <Route path="/buyer/vendors/:vendorId" element={<BuyerVendorMenu />} />
-            <Route path="/buyer/cart" element={<Cart />} />
-            <Route path="/buyer/orders" element={<Orders />} />
-            <Route path="/buyer/orders/:orderId" element={<OrderDetail />} />
+            <Route
+              path="/buyer"
+              element={<ProtectedRoute requiredRole="buyer"><BuyerDashboard /></ProtectedRoute>}
+            />
+            <Route
+              path="/buyer/vendors"
+              element={<ProtectedRoute requiredRole="buyer"><Vendors /></ProtectedRoute>}
+            />
+            <Route
+              path="/buyer/vendors/:vendorId"
+              element={<ProtectedRoute requiredRole="buyer"><BuyerVendorMenu /></ProtectedRoute>}
+            />
+            <Route
+              path="/buyer/cart"
+              element={<ProtectedRoute requiredRole="buyer"><Cart /></ProtectedRoute>}
+            />
+            <Route
+              path="/buyer/orders"
+              element={<ProtectedRoute requiredRole="buyer"><Orders /></ProtectedRoute>}
+            />
+            <Route
+              path="/buyer/orders/:orderId"
+              element={<ProtectedRoute requiredRole="buyer"><OrderDetail /></ProtectedRoute>}
+            />
             
             {/* Runner Routes */}
-            <Route path="/runner" element={<RunnerDashboard />} />
-            <Route path="/runner/orders/:orderId" element={<OrderDetail />} />
+            <Route
+              path="/runner"
+              element={<ProtectedRoute requiredRole="runner"><RunnerDashboard /></ProtectedRoute>}
+            />
+            <Route
+              path="/runner/orders/:orderId"
+              element={<ProtectedRoute requiredRole="runner"><OrderDetail /></ProtectedRoute>}
+            />
             
             {/* Vendor Routes */}
-            <Route path="/vendor" element={<VendorDashboard />} />
-            <Route path="/vendor/setup" element={<VendorSetup />} />
-            <Route path="/vendor/menu" element={<VendorMenu />} />
-            <Route path="/vendor/orders/:orderId" element={<OrderDetail />} />
+            <Route
+              path="/vendor"
+              element={<ProtectedRoute requiredRole="vendor"><VendorDashboard /></ProtectedRoute>}
+            />
+            <Route
+              path="/vendor/setup"
+              element={<ProtectedRoute requiredRole="vendor"><VendorSetup /></ProtectedRoute>}
+            />
+            <Route
+              path="/vendor/menu"
+              element={<ProtectedRoute requiredRole="vendor"><VendorMenu /></ProtectedRoute>}
+            />
+            <Route
+              path="/vendor/orders/:orderId"
+              element={<ProtectedRoute requiredRole="vendor"><OrderDetail /></ProtectedRoute>}
+            />
             
             {/* Shared Routes */}
-            <Route path="/notifications" element={<Notifications />} />
+            <Route
+              path="/notifications"
+              element={<ProtectedRoute><Notifications /></ProtectedRoute>}
+            />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
