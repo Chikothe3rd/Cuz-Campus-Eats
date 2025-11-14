@@ -10,18 +10,21 @@ Campus Eats is a fully functional static web application that allows university 
 ## ✨ Features
 
 ### 🔐 Authentication (Simulated)
+
 - Simple login/register forms with localStorage persistence
 - Three user roles: Buyer, Vendor, and Runner
 - No passwords required for demo purposes
 - Pre-seeded with 4 demo accounts
 
 ### 🏪 Vendor & Menu Management
+
 - Browse multiple vendors (1 official cafeteria + 2 student vendors)
 - Detailed vendor profiles with ratings, prep times, and cuisine types
 - Categorized menu items with images, descriptions, and prices
 - Real-time menu browsing and item selection
 
 ### 🛒 Ordering System
+
 - Add items to cart with quantity controls
 - Multi-vendor cart support (separate orders per vendor)
 - Comprehensive checkout flow with delivery details
@@ -29,6 +32,7 @@ Campus Eats is a fully functional static web application that allows university 
 - Payment method selection (cash or card - simulated)
 
 ### 🚴 Delivery-on-Demand (Simulated)
+
 - Real-time order status updates across browser tabs
 - Order lifecycle: Pending → Accepted → Preparing → Delivering → Delivered
 - Student runners can view and accept available deliveries
@@ -36,6 +40,7 @@ Campus Eats is a fully functional static web application that allows university 
 - Cross-tab synchronization using localStorage events
 
 ### 📦 Order Tracking & Notifications
+
 - Live order progress visualization
 - Detailed order history for buyers, vendors, and runners
 - In-app notification system
@@ -43,11 +48,13 @@ Campus Eats is a fully functional static web application that allows university 
 - Real-time estimated delivery time calculations
 
 ### 📊 Dashboard Views
+
 - **Buyer Dashboard**: Browse vendors, track orders, view cart
 - **Vendor Dashboard**: Manage orders, view revenue statistics
 - **Runner Dashboard**: Accept deliveries, track earnings, update order status
 
 ### 💾 Data Persistence
+
 - All data stored in localStorage (survives page reloads)
 - Pre-seeded with 3 vendors and 10 menu items
 - "Reset demo data" functionality available
@@ -55,13 +62,17 @@ Campus Eats is a fully functional static web application that allows university 
 ## 🚀 How to Run
 
 1. **Open the application**
-   Simply open `index.html` in a modern web browser, or if using the development server:
-   ```bash
-   npm install
-   npm run dev
-   ```
+   Run with the dev server so environment variables are available:
+
+```bash
+npm install
+npm run dev
+```
+
+Note: Do NOT open `index.html` directly from the filesystem. Supabase authentication requires the dev server (or a proper production build/host).
 
 2. **Login with demo accounts**
+
    - **Buyer**: sarah@university.edu
    - **Vendor** (Student): mike@university.edu
    - **Runner**: david@university.edu
@@ -108,6 +119,7 @@ src/
 ## 🗄️ Data Models
 
 ### User
+
 ```typescript
 {
   id: string;
@@ -120,6 +132,7 @@ src/
 ```
 
 ### Order
+
 ```typescript
 {
   id: string;
@@ -149,6 +162,7 @@ src/
 ```
 
 ### Vendor
+
 ```typescript
 {
   id: string;
@@ -165,6 +179,7 @@ src/
 ```
 
 ### MenuItem
+
 ```typescript
 {
   id: string;
@@ -200,13 +215,15 @@ To convert this to a full-stack application:
 ### 1. Replace LocalStorage with API Calls
 
 **Current (localStorage)**:
+
 ```typescript
 const orders = orderStorage.getAll();
 ```
 
 **With Backend**:
+
 ```typescript
-const response = await fetch('/api/orders');
+const response = await fetch("/api/orders");
 const orders = await response.json();
 ```
 
@@ -230,6 +247,7 @@ PATCH  /api/notifications/:id/read
 ### 3. Real-Time Updates
 
 Replace localStorage events with:
+
 - **WebSockets** for instant updates
 - **Server-Sent Events (SSE)** for order status changes
 - **Polling** as a fallback
@@ -237,6 +255,7 @@ Replace localStorage events with:
 ### 4. Database Schema
 
 Use the TypeScript types as your database schema. Recommended tables:
+
 - `users`
 - `vendors`
 - `menu_items`
@@ -247,6 +266,7 @@ Use the TypeScript types as your database schema. Recommended tables:
 ### 5. File Storage
 
 Replace image URLs with:
+
 - Cloud storage (AWS S3, Cloudinary)
 - Database blob storage
 - Local filesystem with proper serving
@@ -273,6 +293,7 @@ The app uses a comprehensive design system defined in `src/index.css`:
 ## 🧪 Testing Scenarios
 
 ### Buyer Flow
+
 1. Login as sarah@university.edu
 2. Browse vendors
 3. Click on "University Cafeteria"
@@ -283,6 +304,7 @@ The app uses a comprehensive design system defined in `src/index.css`:
 8. View order tracking
 
 ### Runner Flow
+
 1. Login as david@university.edu
 2. See available deliveries
 3. Accept a delivery
@@ -290,12 +312,14 @@ The app uses a comprehensive design system defined in `src/index.css`:
 5. Mark as delivered
 
 ### Vendor Flow
+
 1. Login as mike@university.edu or cafeteria@university.edu
 2. View incoming orders
 3. See order details
 4. Track order status as runners update it
 
 ### Cross-Tab Testing
+
 1. Open two browser tabs
 2. Login as buyer in tab 1, runner in tab 2
 3. Place an order in tab 1
@@ -338,6 +362,33 @@ The app uses a comprehensive design system defined in `src/index.css`:
 ✅ SEO optimized
 ✅ Clear documentation
 
+## 🔐 Auth Configuration (Supabase)
+
+This project uses Supabase Auth. Create a `.env` file in the project root with:
+
+```
+VITE_SUPABASE_URL="https://<your-project>.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="<your-anon-or-publishable-key>"
+```
+
+Then start the app via `npm run dev` so these environment variables are injected at runtime.
+
+## 🧰 Troubleshooting Sign-In
+
+- Error: "Unable to reach the server" or "Failed to fetch"
+
+  - Ensure you are running the app with `npm run dev` (not opening `index.html` directly)
+  - Check your internet connection
+  - Verify `.env` contains `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+- Error: "Supabase is not configured"
+
+  - Your environment variables are missing or not loaded. Confirm the `.env` file exists and you used the `VITE_` prefix
+  - Restart the dev server after creating/updating `.env`
+
+- Error: "Invalid email or password"
+  - Verify credentials or reset the password from your Supabase project
+
 ## 🎯 Future Enhancements
 
 - [ ] Search and filter (by cuisine, price, prep time)
@@ -362,6 +413,7 @@ The app uses a comprehensive design system defined in `src/index.css`:
 ## 🤝 Contributing
 
 This is a demo project for educational purposes. Feel free to:
+
 - Fork and modify for your own use
 - Use as a starting point for a real food ordering platform
 - Extend with additional features
