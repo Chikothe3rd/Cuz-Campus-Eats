@@ -34,6 +34,7 @@ const App = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/db-test" element={<DatabaseTest />} />
             
             {/* Buyer Routes */}
             <Route path="/buyer" element={<BuyerDashboard />} />
