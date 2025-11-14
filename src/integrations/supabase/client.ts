@@ -2,20 +2,37 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Support both common env var names
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const SUPABASE_PUBLISHABLE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY) as string | undefined;
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
+  // Provide a clearer, actionable error to help during local dev
+  // Common causes:
+  // 1) App opened via file:// or without Vite/preview (import.meta.env is undefined)
+  // 2) .env missing or variables not prefixed with VITE_
+  // 3) Wrong variable names (use VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY)
+  throw new Error(
+    [
+      'Supabase is not configured: missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY.',
+      'Fix it by:',
+      ' - Creating a .env file in the project root with:',
+      '     VITE_SUPABASE_URL="https://<project>.supabase.co"',
+      '     VITE_SUPABASE_PUBLISHABLE_KEY="<anon key>"',
+      ' - Starting the app with the dev server so env vars are injected:',
+      '     npm run dev',
+      ' - Do NOT open index.html directly from the filesystem.',
+    ].join('\n')
+  );
 }
 
 // Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+// import { supabase } from ":/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+  },
 });

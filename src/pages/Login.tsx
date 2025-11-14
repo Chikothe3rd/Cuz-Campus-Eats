@@ -50,9 +50,27 @@ const Login = () => {
           navigate('/register');
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      toast.error(error.message || 'Invalid email or password. Please try again.');
+      // Map common network/misconfiguration issues to clearer messages
+      const message = (() => {
+        const raw = error as { message?: string } | string | undefined;
+        const msg = typeof raw === 'string' ? raw : String(raw?.message ?? raw);
+        // Network unreachable or opened without dev server (envs missing)
+        if (/Failed to fetch/i.test(msg) || /TypeError: Failed to fetch/i.test(msg)) {
+          return 'Unable to reach the server. Check your internet connection and ensure the app is running via "npm run dev" (not opening index.html directly).';
+        }
+        // Supabase config error messages propagated from client
+        if (/Supabase is not configured/i.test(msg) || /Missing Supabase environment variables/i.test(msg)) {
+          return 'Supabase is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env and run the app with "npm run dev".';
+        }
+        // Invalid credentials
+        if (/Invalid login credentials/i.test(msg)) {
+          return 'Invalid email or password. Please try again.';
+        }
+        return msg || 'Sign-in failed. Please try again.';
+      })();
+      toast.error(message);
     } finally {
       setLoading(false);
     }
