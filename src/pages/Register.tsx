@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { ArrowLeft, ShoppingBag, Store, Bike } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { mapAuthError } from '@/lib/utils';
+import { signUpWithProfileAndRole } from '@/services/auth';
+import { withRetry } from '@/lib/retry';
 
 type UserRole = 'buyer' | 'vendor' | 'runner';
 
@@ -23,6 +24,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [existingUser, setExistingUser] = useState<{ name: string } | null>(null);
+  const [progressMessage, setProgressMessage] = useState('');
 
   // Check if email exists when user types
   useEffect(() => {
@@ -64,79 +66,29 @@ const Register = () => {
       return;
     }
 
-    setLoading(true);
+  setLoading(true);
+  setProgressMessage('Creating auth account...');
 
     try {
       // Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email.toLowerCase(),
-        password: password,
-        options: {
-          data: {
-            name,
-            phone,
-            campus_name: campusName,
-          },
-          emailRedirectTo: `${window.location.origin}/`,
-        },
+      const result = await signUpWithProfileAndRole({
+        email,
+        password,
+        name,
+        phone,
+        campusName,
+        role,
+        onProgress: (stage) => setProgressMessage(stage + '...'),
       });
-
-      if (authError) throw authError;
-
-      if (authData.user) {
-        const userId = authData.user.id;
-
-        // Ensure profile row exists (auth metadata alone isn't stored in public profiles table)
-        const { data: existingProfile, error: profileFetchError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (profileFetchError && profileFetchError.code !== 'PGRST116') {
-          throw profileFetchError;
-        }
-
-        if (!existingProfile) {
-          const { error: profileInsertError } = await supabase.from('profiles').insert({
-            id: userId,
-            email: email.toLowerCase(),
-            name,
-            phone: phone || null,
-            campus_name: campusName || null,
-          });
-          if (profileInsertError) throw profileInsertError;
-        }
-
-        // Insert user role if not present
-        const { data: existingRole, error: roleFetchError } = await supabase
-          .from('user_roles')
-          .select('id, role')
-          .eq('user_id', userId)
-          .maybeSingle();
-
-        if (roleFetchError && roleFetchError.code !== 'PGRST116') {
-          throw roleFetchError;
-        }
-
-        if (!existingRole) {
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: userId,
-              role: role,
-            });
-          if (roleError) throw roleError;
-        }
-
-        toast.success(`Welcome to Campus Eats, ${name}!`);
-        navigate(`/${role}`);
-      }
+      if (result.error) throw new Error(result.error);
+      toast.success(`Welcome to Campus Eats, ${name}!`);
+      navigate(`/${role}`);
     } catch (error: unknown) {
       console.error('Registration error:', error);
       toast.error(mapAuthError(error));
     } finally {
       setLoading(false);
+      setProgressMessage('');
     }
   };
 
@@ -285,7 +237,15 @@ const Register = () => {
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={loading || checkingEmail || !!existingUser}>
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    {progressMessage || 'Creating account...'}
+                  </span>
+                ) : 'Create Account'}
               </Button>
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{' '}

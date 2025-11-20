@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { signIn } from '@/services/auth';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,36 +20,14 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase(),
-        password: password,
-      });
-
-      if (error) throw error;
-
-      // Get user role to redirect appropriately
-      if (authData.user) {
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', authData.user.id)
-          .single();
-
-        if (roleError && roleError.code !== 'PGRST116') {
-          console.error('Role fetch error:', roleError);
-          toast.error('Failed to determine user role. Please contact support.');
-          return;
-        }
-
-        toast.success('Welcome back!');
-        
-        if (roleData?.role) {
-          navigate(`/${roleData.role}`);
-        } else {
-          // If no role found, redirect to home and let them register
-          toast.info('Please complete your registration');
-          navigate('/register');
-        }
+      const { data, error } = await signIn(email, password);
+      if (error) throw new Error(error);
+      toast.success('Welcome back!');
+      if (data?.role) {
+        navigate(`/${data.role}`);
+      } else {
+        toast.info('Please complete your registration');
+        navigate('/register');
       }
     } catch (error: unknown) {
       console.error('Login error:', error);

@@ -8,16 +8,18 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import DatabaseTest from "./pages/DatabaseTest";
-import BuyerDashboard from "./pages/buyer/BuyerDashboard";
-import Vendors from "./pages/buyer/Vendors";
-import BuyerVendorMenu from "./pages/buyer/VendorMenu";
-import Cart from "./pages/buyer/Cart";
-import Orders from "./pages/buyer/Orders";
-import OrderDetail from "./pages/buyer/OrderDetail";
-import RunnerDashboard from "./pages/runner/RunnerDashboard";
-import VendorDashboard from "./pages/vendor/VendorDashboard";
-import VendorSetup from "./pages/vendor/VendorSetup";
-import VendorMenu from "./pages/vendor/VendorMenu";
+import { Suspense, lazy } from 'react';
+const BuyerDashboard = lazy(() => import('./pages/buyer/BuyerDashboard'));
+const Vendors = lazy(() => import('./pages/buyer/Vendors'));
+const BuyerVendorMenu = lazy(() => import('./pages/buyer/VendorMenu'));
+const Cart = lazy(() => import('./pages/buyer/Cart'));
+const Orders = lazy(() => import('./pages/buyer/Orders'));
+const OrderDetail = lazy(() => import('./pages/buyer/OrderDetail'));
+const RunnerDashboard = lazy(() => import('./pages/runner/RunnerDashboard'));
+const VendorDashboard = lazy(() => import('./pages/vendor/VendorDashboard'));
+const VendorSetup = lazy(() => import('./pages/vendor/VendorSetup'));
+const VendorMenu = lazy(() => import('./pages/vendor/VendorMenu'));
+import SupabaseHealth from "./components/SupabaseHealth";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
@@ -30,11 +32,13 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading...</div>}>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/db-test" element={<DatabaseTest />} />
+            <Route path="/health" element={<SupabaseHealth />} />
             
             {/* Buyer Routes */}
             <Route
@@ -98,6 +102,7 @@ const App = () => {
             
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
