@@ -91,9 +91,28 @@ const Register = () => {
             role: role,
           });
 
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error('Role insert error:', roleError);
+          throw roleError;
+        }
+
+        // Verify the role was inserted successfully
+        const { data: verifyRole, error: verifyError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', authData.user.id)
+          .maybeSingle();
+
+        if (verifyError || !verifyRole) {
+          console.error('Role verification failed:', verifyError);
+          toast.error('Account created but role assignment failed. Please contact support.');
+          return;
+        }
 
         toast.success(`Welcome to Campus Eats, ${name}!`);
+        
+        // Small delay to ensure database commit before navigation
+        await new Promise(resolve => setTimeout(resolve, 500));
         navigate(`/${role}`);
       }
     } catch (error: any) {

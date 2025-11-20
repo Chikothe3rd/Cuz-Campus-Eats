@@ -30,9 +30,12 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
         if (error) {
           console.error('Error fetching user roles:', error);
+          // Don't set role on error - will redirect to register
         } else if (data && data.length > 0) {
           // Prefer first role; future enhancement: let user choose
-            setUserRole(data[0].role);
+          setUserRole(data[0].role);
+        } else {
+          console.log('No roles found for user:', user.id);
         }
       } catch (error) {
         console.error('Role fetch error:', error);

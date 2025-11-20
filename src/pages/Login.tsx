@@ -32,9 +32,9 @@ const Login = () => {
           .from('user_roles')
           .select('role')
           .eq('user_id', authData.user.id)
-          .single();
+          .maybeSingle();
 
-        if (roleError && roleError.code !== 'PGRST116') {
+        if (roleError) {
           console.error('Role fetch error:', roleError);
           toast.error('Failed to determine user role. Please contact support.');
           return;
