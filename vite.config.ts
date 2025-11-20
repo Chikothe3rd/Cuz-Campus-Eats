@@ -15,20 +15,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    target: "esnext",
-    sourcemap: mode !== "production",
-    chunkSizeWarningLimit: 900,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"],
-          maps: ["mapbox-gl", "@mapbox/mapbox-gl-geocoder"],
-        },
-      },
-    },
-  },
-  esbuild: {
-    drop: mode === "production" ? ["console", "debugger"] : [],
-  },
 }));

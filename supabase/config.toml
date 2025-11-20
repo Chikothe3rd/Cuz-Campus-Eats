@@ -1,12 +1,1 @@
 project_id = "spvafnlvtdtkztflxzow"
-
-[auth]
-# Enable local development without email confirmation
-enable_signup = true
-enable_confirmations = false
-
-[auth.email]
-# Disable email confirmation for development
-enable_signup = true
-double_confirm_changes = false
-enable_confirmations = false
