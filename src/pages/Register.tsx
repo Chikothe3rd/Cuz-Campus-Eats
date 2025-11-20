@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { ArrowLeft, ShoppingBag, Store, Bike } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { mapAuthError } from '@/lib/utils';
 
 type UserRole = 'buyer' | 'vendor' | 'runner';
 
@@ -83,22 +84,57 @@ const Register = () => {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Insert user role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: authData.user.id,
-            role: role,
-          });
+        const userId = authData.user.id;
 
-        if (roleError) throw roleError;
+        // Ensure profile row exists (auth metadata alone isn't stored in public profiles table)
+        const { data: existingProfile, error: profileFetchError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (profileFetchError && profileFetchError.code !== 'PGRST116') {
+          throw profileFetchError;
+        }
+
+        if (!existingProfile) {
+          const { error: profileInsertError } = await supabase.from('profiles').insert({
+            id: userId,
+            email: email.toLowerCase(),
+            name,
+            phone: phone || null,
+            campus_name: campusName || null,
+          });
+          if (profileInsertError) throw profileInsertError;
+        }
+
+        // Insert user role if not present
+        const { data: existingRole, error: roleFetchError } = await supabase
+          .from('user_roles')
+          .select('id, role')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (roleFetchError && roleFetchError.code !== 'PGRST116') {
+          throw roleFetchError;
+        }
+
+        if (!existingRole) {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: userId,
+              role: role,
+            });
+          if (roleError) throw roleError;
+        }
 
         toast.success(`Welcome to Campus Eats, ${name}!`);
         navigate(`/${role}`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      toast.error(error.message || 'Failed to create account. Please try again.');
+      toast.error(mapAuthError(error));
     } finally {
       setLoading(false);
     }
