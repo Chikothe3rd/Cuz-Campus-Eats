@@ -60,6 +60,40 @@ Populate these in your deployment UI (never commit secrets):
 3. (Optional) Import sample data by running `supabase/seed_data.sql` immediately after the schema.
 4. Verify the health page at `/health` and diagnostics at `/setup` report green status.
 
+### Supabase Production Hardening
+
+Use these guidelines before going live:
+
+| Area       | Checklist                                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Keys       | NEVER expose `service_role` key in client `.env`; only use anon/publishable keys. Rotate anon key periodically (Supabase Dashboard → Project Settings → API). |
+| Auth       | Enable email confirmations; set rate limits (Auth → Settings). Consider enabling password complexity rules.                                                   |
+| RLS        | Confirm every table has Row Level Security enabled and at least one policy (use SQL editor + `pg_policies`).                                                  |
+| Storage    | Restrict bucket policies to needed tables; avoid broad `public` unless intentional.                                                                           |
+| Monitoring | Add error tracking (Sentry/PostHog) and slow query logs; enable Log Drains if required.                                                                       |
+| Backups    | Verify automated backups are enabled; practice a restore.                                                                                                     |
+| Migrations | Adopt a strict migration flow: commit SQL in `supabase/migrations/`, run in staging first.                                                                    |
+| Secrets    | Store environment variables in platform secret manager (Vercel/Netlify).                                                                                      |
+
+### Programmatic Health Ping
+
+You can use the new `pingSupabase()` helper (`src/lib/supabaseHealth.ts`) to quickly verify connectivity & basic query access during startup:
+
+```ts
+import { pingSupabase } from "@/lib/supabaseHealth";
+
+async function startup() {
+  const res = await pingSupabase();
+  if (!res.ok) {
+    console.warn("Supabase ping failed", res);
+  } else {
+    console.info(`Supabase OK in ${res.latencyMs}ms`);
+  }
+}
+```
+
+Consider invoking this in a diagnostics route or a React Query prefetch.
+
 ### Recommended Production Steps
 
 1. Set all environment variables (.env in local, deploy UI in prod).

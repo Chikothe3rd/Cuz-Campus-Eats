@@ -21,10 +21,21 @@ export type AuthResult<T = unknown> = {
 export async function signUpWithProfileAndRole(params: SignUpParams): Promise<AuthResult<{ userId: string }>> {
   const { email, password, name, phone, campusName, role, onProgress } = params;
   try {
+  // Basic input validation (client-side guardrails before hitting Supabase)
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)) {
+    return { error: 'Invalid email format' };
+  }
+  if (password.length < 8 || !/[0-9!@#$%^&*]/.test(password)) {
+    return { error: 'Password must be at least 8 characters and include a number or special character' };
+  }
+  if (!['buyer','vendor','runner'].includes(role)) {
+    return { error: 'Invalid role specified' };
+  }
   onProgress?.('Creating auth account');
   logger.info('Auth signup started', { email });
     const { data: authData, error: authError } = await withRetry(() => supabase.auth.signUp({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password,
       options: {
         data: { name, phone, campus_name: campusName, role },
@@ -51,7 +62,7 @@ export async function signUpWithProfileAndRole(params: SignUpParams): Promise<Au
       const { error: profileInsertError } = await withRetry(async () => {
         return await supabase.from('profiles').insert({
           id: userId,
-          email: email.toLowerCase(),
+          email: normalizedEmail,
           name,
           phone: phone || null,
           campus_name: campusName || null,
