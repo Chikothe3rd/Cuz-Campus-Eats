@@ -12,16 +12,21 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   // 1) App opened via file:// or without Vite/preview (import.meta.env is undefined)
   // 2) .env missing or variables not prefixed with VITE_
   // 3) Wrong variable names (use VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY)
+  // 4) Supabase project not created or deleted
   throw new Error(
     [
-      'Supabase is not configured: missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY.',
-      'Fix it by:',
-      ' - Creating a .env file in the project root with:',
-      '     VITE_SUPABASE_URL="https://<project>.supabase.co"',
-      '     VITE_SUPABASE_PUBLISHABLE_KEY="<anon key>"',
-      ' - Starting the app with the dev server so env vars are injected:',
-      '     npm run dev',
-      ' - Do NOT open index.html directly from the filesystem.',
+      '❌ Supabase is not configured: missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY.',
+      '',
+      '📋 See SUPABASE_SETUP_REQUIRED.md for setup instructions.',
+      '',
+      'Quick fix:',
+      ' 1. Create a Supabase project at https://supabase.com/dashboard',
+      ' 2. Update .env file with your project URL and anon key',
+      ' 3. Run: pnpm dev',
+      '',
+      'Current values:',
+      `   VITE_SUPABASE_URL: ${SUPABASE_URL || 'NOT SET'}`,
+      `   VITE_SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY ? 'SET' : 'NOT SET'}`,
     ].join('\n')
   );
 }

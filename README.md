@@ -63,7 +63,9 @@ Populate these in your deployment UI (never commit secrets):
 6. Add security headers (CSP, X-Frame-Options, Strict-Transport-Security).
 7. Monitor errors (Sentry/PostHog) & performance (Web Vitals / analytics).
 
-### Troubleshooting Blank Screen
+### Troubleshooting
+
+#### Blank Screen
 
 If you see a blank page:
 
@@ -72,6 +74,15 @@ If you see a blank page:
 3. Verify that `.env` contains valid Supabase keys.
 4. Confirm Google Maps API key is set if map features are used.
 5. Clear service worker or hard refresh (Ctrl+Shift+R) if caching was previously enabled.
+
+#### Supabase Connection Issues
+
+If login fails or you see "Unable to reach Supabase":
+
+1. Visit `/health` page to check Supabase connectivity status
+2. See [SUPABASE_TROUBLESHOOTING.md](./SUPABASE_TROUBLESHOOTING.md) for detailed diagnostics
+3. Ensure dev server is running (not opening index.html directly)
+4. Check browser console for CSP violations or network errors
 
 ### Future Enhancements
 

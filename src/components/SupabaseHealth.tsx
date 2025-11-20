@@ -31,6 +31,26 @@ const SupabaseHealth = () => {
   const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   const hasKey = !!(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY);
 
+  if (!url || !hasKey) {
+    setStatus('error');
+    setError('Supabase not configured. See SUPABASE_SETUP_REQUIRED.md for setup instructions.');
+    return;
+  }
+
+  // Test network reachability first
+  try {
+    const healthUrl = `${url}/rest/v1/`;
+    const healthResponse = await fetch(healthUrl, { method: 'HEAD', signal: AbortSignal.timeout(5000) });
+    // Any response (even 401) means server is reachable
+  } catch (fetchError) {
+    const msg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+    if (msg.includes('DNS') || msg.includes('ENOTFOUND') || msg.includes('NetworkError')) {
+      setStatus('error');
+      setError(`Cannot reach Supabase server at ${url}. The project may not exist or has been deleted. See SUPABASE_SETUP_REQUIRED.md`);
+      return;
+    }
+  }
+
   const startProfiles = performance.now();
   const { error: profilesError } = await supabase.from('profiles').select('id').limit(1);
   const profilesLatency = Math.round(performance.now() - startProfiles);
