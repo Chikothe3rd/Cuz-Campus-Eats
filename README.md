@@ -57,7 +57,7 @@ Populate these in your deployment UI (never commit secrets):
 
 1. Open the Supabase dashboard for your project (`https://argfskhwqxyvirxrybqj.supabase.co`).
 2. Navigate to **SQL Editor** and run the script in `supabase/full_schema.sql` to create tables, RLS policies, and the storage bucket.
-3. (Optional) Seed data by running custom SQL/inserts after the schema script.
+3. (Optional) Import sample data by running `supabase/seed_data.sql` immediately after the schema.
 4. Verify the health page at `/health` and diagnostics at `/setup` report green status.
 
 ### Recommended Production Steps

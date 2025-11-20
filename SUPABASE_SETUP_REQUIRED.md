@@ -18,7 +18,8 @@ The repo contains a consolidated schema script at `supabase/full_schema.sql`. Ru
 1. Open the Supabase Dashboard → SQL Editor
 2. Paste the entire contents of `supabase/full_schema.sql`
 3. Click **Run**
-4. Verify tables appear under the `public` schema
+4. (Optional) Immediately run `supabase/seed_data.sql` to load demo buyers, vendors, menu items, and an order
+5. Verify tables and sample data appear under the `public` schema
 
 > The individual migration files remain useful for incremental updates, but the consolidated script is the fastest way to bootstrap a new project.
 
