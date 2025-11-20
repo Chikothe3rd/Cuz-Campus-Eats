@@ -116,6 +116,20 @@ What it does:
 
 This script is idempotent: re-running will skip existing data.
 
+## Email Confirmation (Dev vs Production)
+
+- Development: To remove email confirmation during local development, disable email confirmations in your Supabase Dashboard:
+  - Go to Auth → Providers → Email → toggle OFF "Confirm email".
+  - Alternatively, keep it ON and confirm specific test users with:
+
+```
+$env:SUPABASE_URL="https://YOUR-PROJECT.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY="YOUR-SERVICE-ROLE-KEY"
+pnpm confirm:email user@example.com
+```
+
+- Production: Keep email confirmation ENABLED for security and deliverability. The app will prompt users to verify if required by your project settings.
+
 ## 📁 Project Structure
 
 ```
