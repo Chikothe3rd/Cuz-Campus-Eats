@@ -7,9 +7,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { ArrowLeft, ShoppingBag, Store, Bike } from 'lucide-react';
-import { mapAuthError } from '@/lib/utils';
-import { signUpWithProfileAndRole, signIn } from '@/services/auth';
-import { withRetry } from '@/lib/retry';
 import { supabase } from '@/integrations/supabase/client';
 
 type UserRole = 'buyer' | 'vendor' | 'runner';
@@ -25,12 +22,6 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [existingUser, setExistingUser] = useState<{ name: string } | null>(null);
-  const [progressMessage, setProgressMessage] = useState('');
-  const dashboardByRole: Record<UserRole, string> = {
-    buyer: '/buyer',
-    vendor: '/vendor',
-    runner: '/runner',
-  };
 
   // Check if email exists when user types
   useEffect(() => {
@@ -73,35 +64,43 @@ const Register = () => {
     }
 
     setLoading(true);
-    setProgressMessage('Creating auth account...');
 
     try {
       // Sign up with Supabase Auth
-      const result = await signUpWithProfileAndRole({
-        email,
-        password,
-        name,
-        phone,
-        campusName,
-        role,
-        onProgress: (stage) => setProgressMessage(stage + '...'),
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.toLowerCase(),
+        password: password,
+        options: {
+          data: {
+            name,
+            phone,
+            campus_name: campusName,
+          },
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
-      
-      if (result.error) throw new Error(result.error);
-      
-      toast.success(`Account created successfully! Please check your email to verify your account.`);
-      
-      // Always redirect to login after successful registration
-      // This avoids issues with email confirmation requirements
-      setTimeout(() => {
-        navigate('/login', { state: { email, message: 'Please sign in with your new account' } });
-      }, 1500);
-      
-    } catch (error: unknown) {
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // Insert user role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: authData.user.id,
+            role: role,
+          });
+
+        if (roleError) throw roleError;
+
+        toast.success(`Welcome to Campus Eats, ${name}!`);
+        navigate(`/${role}`);
+      }
+    } catch (error: any) {
       console.error('Registration error:', error);
-      toast.error(mapAuthError(error));
+      toast.error(error.message || 'Failed to create account. Please try again.');
+    } finally {
       setLoading(false);
-      setProgressMessage('');
     }
   };
 
@@ -180,7 +179,7 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={8}
+                  minLength={6}
                 />
               </div>
 
@@ -245,20 +244,12 @@ const Register = () => {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Password must be at least 6 characters
+                Password must be at least 6 characters long
               </p>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={loading || checkingEmail || !!existingUser}>
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
-                    {progressMessage || 'Creating account...'}
-                  </span>
-                ) : 'Create Account'}
+                {loading ? 'Creating account...' : 'Create Account'}
               </Button>
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{' '}

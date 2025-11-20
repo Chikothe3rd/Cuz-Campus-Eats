@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,96 +7,52 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { signIn } from '@/services/auth';
 
 const Login = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Handle state passed from registration
-  useEffect(() => {
-    const state = location.state as { email?: string; message?: string } | null;
-    if (state?.email) {
-      setEmail(state.email);
-    }
-    if (state?.message) {
-      toast.info(state.message);
-      // Clear the state after showing the message
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, location.pathname, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data, error } = await signIn(email, password);
-      
-      if (error) throw new Error(error);
-      
-      if (!data?.userId) {
-        throw new Error('Login successful but no user data returned');
-      }
-      
-      toast.success('Welcome back!');
-      
-      // Redirect based on user's role
-      if (data.role) {
-        // Small delay to ensure auth state is fully updated
-        setTimeout(() => {
-          navigate(`/${data.role}`, { replace: true });
-        }, 100);
-      } else {
-        // User exists but has no role assigned - shouldn't happen but handle gracefully
-        toast.info('Please complete your profile setup');
-        setTimeout(() => {
-          navigate('/register', { replace: true });
-        }, 100);
-      }
-    } catch (error: unknown) {
-      console.error('Login error:', error);
-      // Map common network/misconfiguration issues to clearer messages
-      const raw = error as { message?: string } | string | undefined;
-      const msg = typeof raw === 'string' ? raw : String(raw?.message ?? raw);
-      
-      let message = msg || 'Sign-in failed. Please try again.';
-      let showSetupLink = false;
-      
-      // Email not confirmed
-      if (/Email not confirmed/i.test(msg) || /email.*verif/i.test(msg)) {
-        message = 'Please verify your email address before signing in. Check your inbox for the verification link.';
-      }
-      // Network unreachable or DNS errors
-      else if (/Failed to fetch/i.test(msg) || /TypeError: Failed to fetch/i.test(msg) || /NetworkError/i.test(msg)) {
-        message = 'Unable to reach Supabase. The project may not exist or has been deleted.';
-        showSetupLink = true;
-      }
-      // Supabase config error messages propagated from client
-      else if (/Supabase is not configured/i.test(msg) || /Missing.*environment/i.test(msg)) {
-        message = 'Supabase is not configured. Setup is required.';
-        showSetupLink = true;
-      }
-      // Invalid credentials
-      else if (/Invalid login credentials/i.test(msg)) {
-        message = 'Invalid email or password. Please try again.';
-      }
-      // DNS/ENOTFOUND errors
-      else if (/ENOTFOUND/i.test(msg) || /DNS/i.test(msg) || /not reach/i.test(msg)) {
-        message = 'Cannot reach Supabase server. The project may not exist.';
-        showSetupLink = true;
-      }
-      
-      toast.error(message, {
-        duration: 5000,
-        action: showSetupLink ? {
-          label: 'Setup Guide',
-          onClick: () => navigate('/setup'),
-        } : undefined,
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase(),
+        password: password,
       });
+
+      if (error) throw error;
+
+      // Get user role to redirect appropriately
+      if (authData.user) {
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', authData.user.id)
+          .single();
+
+        if (roleError && roleError.code !== 'PGRST116') {
+          console.error('Role fetch error:', roleError);
+          toast.error('Failed to determine user role. Please contact support.');
+          return;
+        }
+
+        toast.success('Welcome back!');
+        
+        if (roleData?.role) {
+          navigate(`/${roleData.role}`);
+        } else {
+          // If no role found, redirect to home and let them register
+          toast.info('Please complete your registration');
+          navigate('/register');
+        }
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast.error(error.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
