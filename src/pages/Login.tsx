@@ -24,7 +24,21 @@ const Login = () => {
         password: password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific email confirmation error
+        if (error.message?.includes('Email not confirmed') || error.message?.includes('email_not_confirmed')) {
+          toast.error('Please confirm your email before logging in. Check your inbox for the confirmation link.');
+          return;
+        }
+        throw error;
+      }
+
+      // Check if user needs to confirm email
+      if (authData.user && !authData.user.email_confirmed_at && authData.user.confirmation_sent_at) {
+        toast.info('Please confirm your email to continue. Check your inbox.');
+        await supabase.auth.signOut();
+        return;
+      }
 
       // Get user role to redirect appropriately
       if (authData.user) {
@@ -43,6 +57,8 @@ const Login = () => {
         toast.success('Welcome back!');
         
         if (roleData?.role) {
+          // Small delay to allow auth state to propagate through useAuth hook
+          await new Promise(resolve => setTimeout(resolve, 300));
           navigate(`/${roleData.role}`);
         } else {
           // If no role found, redirect to home and let them register
