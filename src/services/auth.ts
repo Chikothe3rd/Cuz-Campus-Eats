@@ -111,13 +111,17 @@ export async function signIn(email: string, password: string): Promise<AuthResul
     if (error) throw error;
     if (!authData.user) throw new Error('No user returned from sign in');
     const userId = authData.user.id;
-    const { data: roleData } = await supabase
+    // Fetch all roles; choose first if multiple
+    const { data: roles, error: roleError } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .maybeSingle();
-    logger.info('Sign in success', { userId, role: roleData?.role });
-    return { data: { userId, role: roleData?.role } };
+      .eq('user_id', userId);
+    if (roleError) {
+      logger.warn('Role fetch error on sign in', { userId, error: roleError });
+    }
+    const role = roles && roles.length > 0 ? roles[0].role : undefined;
+    logger.info('Sign in success', { userId, role });
+    return { data: { userId, role } };
   } catch (e) {
     logger.error('Sign in failed', { email, error: e });
     return { error: mapAuthError(e) };

@@ -22,16 +22,17 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
       }
 
       try {
+        // Fetch all roles to avoid .single() errors when a user has multiple
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .single();
+          .eq('user_id', user.id);
 
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching user role:', error);
-        } else if (data) {
-          setUserRole(data.role);
+        if (error) {
+          console.error('Error fetching user roles:', error);
+        } else if (data && data.length > 0) {
+          // Prefer first role; future enhancement: let user choose
+            setUserRole(data[0].role);
         }
       } catch (error) {
         console.error('Role fetch error:', error);
