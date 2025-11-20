@@ -9,36 +9,35 @@ export const useAuth = () => {
   const [role, setRole] = useState<string | null>(null);
   const [roleLoading, setRoleLoading] = useState(false);
 
-  // Fetch user role whenever user changes
+  // Fetch user role whenever user changes; support multi-role by selecting array
   useEffect(() => {
     const fetchRole = async () => {
       if (!user) {
         setRole(null);
         return;
       }
-
       setRoleLoading(true);
       try {
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching user role:', error);
+          .eq('user_id', user.id);
+        if (error) {
+          console.error('Error fetching user roles:', error);
           setRole(null);
+        } else if (Array.isArray(data) && data.length > 0) {
+          // prefer first role; future enhancement could allow selection
+          setRole(data[0].role);
         } else {
-          setRole(data?.role || null);
+          setRole(null);
         }
-      } catch (error) {
-        console.error('Role fetch error:', error);
+      } catch (err) {
+        console.error('Role fetch exception:', err);
         setRole(null);
       } finally {
         setRoleLoading(false);
       }
     };
-
     fetchRole();
   }, [user]);
 

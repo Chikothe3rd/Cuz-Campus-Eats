@@ -105,13 +105,14 @@ const Register = () => {
       await new Promise(resolve => setTimeout(resolve, 300));
 
       // Verify profile was created
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileRows, error: profileError } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', authData.user.id)
-        .maybeSingle();
-
-      if (profileError || !profileData) {
+        .limit(1);
+      if (profileError) {
+        console.warn('Profile fetch error:', profileError);
+      } else if (!profileRows || profileRows.length === 0) {
         console.warn('Profile not found, trigger may have failed');
       }
 
@@ -148,15 +149,18 @@ const Register = () => {
       }
 
       // Verify the role was inserted successfully
-      const { data: verifyRole, error: verifyError } = await supabase
+      const { data: verifyRoles, error: verifyError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', authData.user.id)
-        .maybeSingle();
-
-      if (verifyError || !verifyRole) {
-        console.error('Role verification failed:', verifyError);
+        .limit(1);
+      if (verifyError) {
+        console.error('Role verification error:', verifyError);
         toast.error('Account created but role assignment failed. Please contact support.');
+        return;
+      }
+      if (!verifyRoles || verifyRoles.length === 0) {
+        toast.error('Role not found after insertion. Please contact support.');
         return;
       }
 

@@ -36,31 +36,25 @@ const Login = () => {
 
       if (error) throw error;
 
-      // Get user role to redirect appropriately
+      // Get user roles to redirect appropriately (supports multi-role)
       if (authData?.user) {
-        const { data: roleData, error: roleError } = await supabase
+        const { data: roles, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', authData.user.id)
-          .maybeSingle();
-
+          .eq('user_id', authData.user.id);
         if (roleError) {
           console.error('Role fetch error:', roleError);
           toast.error('Failed to determine user role. Please contact support.');
           return;
         }
-
         toast.success('Welcome back!');
-
-        if (roleData?.role) {
-          navigate(`/${roleData.role}`);
+        if (Array.isArray(roles) && roles.length > 0) {
+          navigate(`/${roles[0].role}`);
         } else {
-          // If no role found, redirect to registration
           toast.info('Please complete your registration');
           navigate('/register');
         }
       } else {
-        // Fallback if no user object returned
         toast.error('Authentication failed. Please try again.');
       }
     } catch (err: any) {
@@ -142,4 +136,3 @@ const Login = () => {
 };
 
 export default Login;
-  };  return { user, session, loading, role, roleLoading };
