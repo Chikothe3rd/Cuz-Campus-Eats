@@ -72,8 +72,8 @@ const Register = () => {
       return;
     }
 
-  setLoading(true);
-  setProgressMessage('Creating auth account...');
+    setLoading(true);
+    setProgressMessage('Creating auth account...');
 
     try {
       // Sign up with Supabase Auth
@@ -86,36 +86,20 @@ const Register = () => {
         role,
         onProgress: (stage) => setProgressMessage(stage + '...'),
       });
+      
       if (result.error) throw new Error(result.error);
-      toast.success(`Welcome to Campus Eats, ${name}!`);
-
-      // Ensure the user is signed in immediately after registration when possible
-      const signin = await signIn(email, password);
-      if (signin.error) {
-        const msg = signin.error.toLowerCase();
-        if (msg.includes('confirm') || msg.includes('email not confirmed') || msg.includes('verification')) {
-          toast.info('Check your email to verify your account, then sign in.');
-          navigate('/login');
-        } else {
-          toast.error(signin.error);
-        }
-        return;
-      }
-
-      const resolvedRole = (signin.data?.role ?? role) as UserRole | undefined;
-      const destination = resolvedRole ? dashboardByRole[resolvedRole] : undefined;
-
-      if (destination) {
-        navigate(destination);
-      } else {
-        // Fallback path keeps user from getting stuck if role lookup fails
-        toast.info('Account created. Please sign in to choose your dashboard.');
-        navigate('/login');
-      }
+      
+      toast.success(`Account created successfully! Please check your email to verify your account.`);
+      
+      // Always redirect to login after successful registration
+      // This avoids issues with email confirmation requirements
+      setTimeout(() => {
+        navigate('/login', { state: { email, message: 'Please sign in with your new account' } });
+      }, 1500);
+      
     } catch (error: unknown) {
       console.error('Registration error:', error);
       toast.error(mapAuthError(error));
-    } finally {
       setLoading(false);
       setProgressMessage('');
     }
@@ -196,7 +180,7 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
 
@@ -261,7 +245,7 @@ const Register = () => {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Password must be at least 6 characters long
+                Password must be at least 6 characters
               </p>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">

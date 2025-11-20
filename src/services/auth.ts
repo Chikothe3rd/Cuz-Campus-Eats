@@ -26,8 +26,8 @@ export async function signUpWithProfileAndRole(params: SignUpParams): Promise<Au
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)) {
     return { error: 'Invalid email format' };
   }
-  if (password.length < 8 || !/[0-9!@#$%^&*]/.test(password)) {
-    return { error: 'Password must be at least 8 characters and include a number or special character' };
+  if (password.length < 6) {
+    return { error: 'Password must be at least 6 characters' };
   }
   if (!['buyer','vendor','runner'].includes(role)) {
     return { error: 'Invalid role specified' };

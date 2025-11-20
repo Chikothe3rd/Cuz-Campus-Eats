@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,9 +11,23 @@ import { signIn } from '@/services/auth';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Handle state passed from registration
+  useEffect(() => {
+    const state = location.state as { email?: string; message?: string } | null;
+    if (state?.email) {
+      setEmail(state.email);
+    }
+    if (state?.message) {
+      toast.info(state.message);
+      // Clear the state after showing the message
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,13 +35,27 @@ const Login = () => {
 
     try {
       const { data, error } = await signIn(email, password);
+      
       if (error) throw new Error(error);
+      
+      if (!data?.userId) {
+        throw new Error('Login successful but no user data returned');
+      }
+      
       toast.success('Welcome back!');
-      if (data?.role) {
-        navigate(`/${data.role}`);
+      
+      // Redirect based on user's role
+      if (data.role) {
+        // Small delay to ensure auth state is fully updated
+        setTimeout(() => {
+          navigate(`/${data.role}`, { replace: true });
+        }, 100);
       } else {
-        toast.info('Please complete your registration');
-        navigate('/register');
+        // User exists but has no role assigned - shouldn't happen but handle gracefully
+        toast.info('Please complete your profile setup');
+        setTimeout(() => {
+          navigate('/register', { replace: true });
+        }, 100);
       }
     } catch (error: unknown) {
       console.error('Login error:', error);
@@ -38,8 +66,12 @@ const Login = () => {
       let message = msg || 'Sign-in failed. Please try again.';
       let showSetupLink = false;
       
+      // Email not confirmed
+      if (/Email not confirmed/i.test(msg) || /email.*verif/i.test(msg)) {
+        message = 'Please verify your email address before signing in. Check your inbox for the verification link.';
+      }
       // Network unreachable or DNS errors
-      if (/Failed to fetch/i.test(msg) || /TypeError: Failed to fetch/i.test(msg) || /NetworkError/i.test(msg)) {
+      else if (/Failed to fetch/i.test(msg) || /TypeError: Failed to fetch/i.test(msg) || /NetworkError/i.test(msg)) {
         message = 'Unable to reach Supabase. The project may not exist or has been deleted.';
         showSetupLink = true;
       }
