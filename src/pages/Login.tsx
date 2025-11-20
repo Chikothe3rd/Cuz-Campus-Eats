@@ -20,11 +20,22 @@ const Login = () => {
 
     try {
       const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: email.toLowerCase(),
+        email: email.trim().toLowerCase(),
         password: password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific error cases
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Please confirm your email address before signing in. Check your inbox for the confirmation link.');
+          return;
+        }
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid email or password. Please check your credentials and try again.');
+          return;
+        }
+        throw error;
+      }
 
       // Get user role to redirect appropriately
       if (authData.user) {
@@ -52,7 +63,7 @@ const Login = () => {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      toast.error(error.message || 'Invalid email or password. Please try again.');
+      toast.error(error.message || 'Failed to sign in. Please try again.');
     } finally {
       setLoading(false);
     }

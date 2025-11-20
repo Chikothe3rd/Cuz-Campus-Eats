@@ -68,7 +68,7 @@ const Register = () => {
     try {
       // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email.toLowerCase(),
+        email: email.trim().toLowerCase(),
         password: password,
         options: {
           data: {
@@ -83,6 +83,15 @@ const Register = () => {
       if (authError) throw authError;
 
       if (authData.user) {
+        // Check if email confirmation is required
+        if (authData.session === null) {
+          toast.info('Please check your email to confirm your account before signing in.');
+          setLoading(false);
+          // Wait a moment then redirect to login
+          setTimeout(() => navigate('/login'), 2000);
+          return;
+        }
+
         // Insert user role
         const { error: roleError } = await supabase
           .from('user_roles')
@@ -96,9 +105,14 @@ const Register = () => {
         toast.success(`Welcome to Campus Eats, ${name}!`);
         navigate(`/${role}`);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Registration error:', error);
-      toast.error(error.message || 'Failed to create account. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      if (errorMessage.includes('already registered')) {
+        toast.error('An account with this email already exists. Please sign in instead.');
+      } else {
+        toast.error(errorMessage || 'Failed to create account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
