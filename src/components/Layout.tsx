@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, User, LogOut, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { signOut } from '@/services/auth';
 import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
@@ -73,8 +74,12 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [user]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success('Logged out successfully');
+    const { error } = await signOut();
+    if (error) {
+      toast.error(error || 'Failed to sign out');
+      return;
+    }
+    toast.success('Signed out successfully');
     navigate('/');
   };
 

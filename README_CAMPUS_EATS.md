@@ -83,6 +83,39 @@ Note: Do NOT open `index.html` directly from the filesystem. Supabase authentica
    - Login as David (runner) → Accept the delivery → Update status
    - Login as Mike or Cafeteria (vendor) → View incoming orders
 
+## Seeding the Database
+
+To load sample users (buyer, vendors, runner), vendors, and menu items into your Supabase project:
+
+1. Ensure you have these environment variables (use a temporary shell session; do NOT commit the service key):
+
+```
+setx SUPABASE_URL "https://YOUR-PROJECT.supabase.co"
+setx SUPABASE_SERVICE_ROLE_KEY "YOUR-SERVICE-ROLE-KEY"
+```
+
+Alternatively for the current PowerShell session only:
+
+```
+$env:SUPABASE_URL="https://YOUR-PROJECT.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY="YOUR-SERVICE-ROLE-KEY"
+```
+
+2. Run the seed script:
+
+```
+pnpm seed
+```
+
+What it does:
+
+- Creates or reuses users and confirms their emails.
+- Upserts their profiles and assigns roles.
+- Creates vendor rows for vendor users.
+- Inserts a small menu for each vendor.
+
+This script is idempotent: re-running will skip existing data.
+
 ## 📁 Project Structure
 
 ```

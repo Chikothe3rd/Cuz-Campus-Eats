@@ -137,3 +137,16 @@ export async function getUserRole(userId: string): Promise<AuthResult<{ role?: s
     return { error: mapAuthError(e) };
   }
 }
+
+export async function signOut(): Promise<AuthResult> {
+  try {
+    logger.info('Sign out attempt');
+    const { error } = await withRetry(() => supabase.auth.signOut());
+    if (error) throw error;
+    logger.info('Sign out success');
+    return { data: undefined };
+  } catch (e) {
+    logger.error('Sign out failed', { error: e });
+    return { error: mapAuthError(e) };
+  }
+}
