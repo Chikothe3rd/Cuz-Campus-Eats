@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, Store, Bike, Utensils, Clock, Shield } from 'lucide-react';
+import { ShoppingBag, Store, Bike, Utensils, Clock, Shield, AlertTriangle } from 'lucide-react';
 import { userStorage } from '@/lib/storage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [showSetupWarning, setShowSetupWarning] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -14,10 +16,35 @@ const Landing = () => {
     if (currentUser) {
       navigate(`/${currentUser.role}`);
     }
+
+    // Check if Supabase is configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      setShowSetupWarning(true);
+    }
   }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Setup Warning Banner */}
+      {showSetupWarning && (
+        <div className="bg-red-500 text-white py-3 px-4 text-center">
+          <div className="container mx-auto flex items-center justify-center gap-3 flex-wrap">
+            <AlertTriangle className="h-5 w-5" />
+            <span className="font-medium">Supabase is not configured</span>
+            <Button 
+              size="sm" 
+              variant="secondary"
+              onClick={() => navigate('/setup')}
+              className="ml-2"
+            >
+              Run Setup Diagnostics
+            </Button>
+          </div>
+        </div>
+      )}
+      
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Gradient Background */}

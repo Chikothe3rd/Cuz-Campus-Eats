@@ -22,6 +22,7 @@ const VendorMenu = lazy(() => import('./pages/vendor/VendorMenu'));
 import SupabaseHealth from "./components/SupabaseHealth";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
+import SetupDiagnostics from "./pages/SetupDiagnostics";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/db-test" element={<DatabaseTest />} />
             <Route path="/health" element={<SupabaseHealth />} />
+            <Route path="/setup" element={<SetupDiagnostics />} />
             
             {/* Buyer Routes */}
             <Route
