@@ -82,5 +82,7 @@ export function validateEmail(email: string): boolean {
 
 export function validatePhone(phone: string): boolean {
   const phoneRegex = /^[\d\s\-+()]+$/;
-  return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10;
+  const digitCount = phone.replace(/\D/g, '').length;
+  // Allow campus extensions (7+ digits) while still permitting full 10+ digit numbers
+  return phoneRegex.test(phone) && digitCount >= 7;
 }

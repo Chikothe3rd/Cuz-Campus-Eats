@@ -26,6 +26,11 @@ const Register = () => {
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [existingUser, setExistingUser] = useState<{ name: string } | null>(null);
   const [progressMessage, setProgressMessage] = useState('');
+  const dashboardByRole: Record<UserRole, string> = {
+    buyer: '/buyer',
+    vendor: '/vendor',
+    runner: '/runner',
+  };
 
   // Check if email exists when user types
   useEffect(() => {
@@ -97,7 +102,16 @@ const Register = () => {
         return;
       }
 
-      navigate(`/${role}`);
+      const resolvedRole = (signin.data?.role ?? role) as UserRole | undefined;
+      const destination = resolvedRole ? dashboardByRole[resolvedRole] : undefined;
+
+      if (destination) {
+        navigate(destination);
+      } else {
+        // Fallback path keeps user from getting stuck if role lookup fails
+        toast.info('Account created. Please sign in to choose your dashboard.');
+        navigate('/login');
+      }
     } catch (error: unknown) {
       console.error('Registration error:', error);
       toast.error(mapAuthError(error));
