@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, Clock, Store, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
 
 const Vendors = () => {
   const navigate = useNavigate();
@@ -44,7 +45,12 @@ const Vendors = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <motion.div 
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         <div>
           <h1 className="text-4xl font-bold mb-2">Browse Vendors</h1>
           <p className="text-muted-foreground text-lg">Discover amazing food from student vendors and the official cafeteria</p>
@@ -63,12 +69,17 @@ const Vendors = () => {
 
         {/* Vendors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVendors.map((vendor) => (
-            <Card
+          {filteredVendors.map((vendor, index) => (
+            <motion.div
               key={vendor.id}
-              className="hover:shadow-lg transition-all cursor-pointer group overflow-hidden"
-              onClick={() => navigate(`/buyer/vendors/${vendor.id}`)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
             >
+              <Card
+                className="hover:shadow-lg transition-all cursor-pointer group overflow-hidden card-hover"
+                onClick={() => navigate(`/buyer/vendors/${vendor.id}`)}
+              >
               <div className="relative h-52 overflow-hidden">
                 <img
                   src={vendor.image_url || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800'}
@@ -106,9 +117,10 @@ const Vendors = () => {
                   <Store className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">{vendor.cuisine_type}</span>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+            </CardContent>
+          </Card>
+          </motion.div>
+        ))}
         </div>
 
         {filteredVendors.length === 0 && (
@@ -118,7 +130,7 @@ const Vendors = () => {
             <p className="text-muted-foreground">Try adjusting your search terms</p>
           </div>
         )}
-      </div>
+      </motion.div>
     </Layout>
   );
 };

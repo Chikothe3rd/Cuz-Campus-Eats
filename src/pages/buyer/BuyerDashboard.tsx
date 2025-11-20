@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { formatZMW } from '@/lib/utils';
 
 const BuyerDashboard = () => {
   const navigate = useNavigate();
@@ -168,7 +167,7 @@ const BuyerDashboard = () => {
                         <div>
                           <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
                           <p className="text-sm text-muted-foreground">
-                            {formatZMW(Number(order.total))}
+                            ${order.total.toFixed(2)}
                           </p>
                         </div>
                       </div>

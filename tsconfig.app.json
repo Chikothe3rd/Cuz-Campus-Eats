@@ -14,19 +14,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-  // Make Vitest globals like describe/it/expect available in editor tooling
-  // Include Google Maps global namespace typings
-  "types": ["vitest/globals", "vite/client", "google.maps"],
-
     /* Linting */
-    "strict": true,
+    "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
-    "forceConsistentCasingInFileNames": true,
 
-    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProtectedRouteProps {
@@ -8,7 +10,38 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { user, loading, role, roleLoading } = useAuth();
+  const { user, loading } = useAuth();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [roleLoading, setRoleLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) {
+        setRoleLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching user role:', error);
+        } else if (data) {
+          setUserRole(data.role);
+        }
+      } catch (error) {
+        console.error('Role fetch error:', error);
+      } finally {
+        setRoleLoading(false);
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
 
   // Show loading while checking auth and role
   if (loading || roleLoading) {
@@ -29,13 +62,13 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   }
 
   // Redirect to register if no role assigned
-  if (!role) {
+  if (!userRole) {
     return <Navigate to="/register" replace />;
   }
 
   // Check role-based access
-  if (requiredRole && role !== requiredRole) {
-    return <Navigate to={`/${role}`} replace />;
+  if (requiredRole && userRole !== requiredRole) {
+    return <Navigate to={`/${userRole}`} replace />;
   }
 
   return <>{children}</>;

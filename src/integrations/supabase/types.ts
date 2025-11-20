@@ -77,9 +77,12 @@ export type Database = {
           estimated_delivery_at: string | null
           id: string
           items: Json
+          last_location_update: string | null
           payment_method: string
           payment_status: string
           runner_id: string | null
+          runner_lat: number | null
+          runner_lng: number | null
           subtotal: number
           tax: number
           total: number
@@ -98,9 +101,12 @@ export type Database = {
           estimated_delivery_at?: string | null
           id?: string
           items: Json
+          last_location_update?: string | null
           payment_method: string
           payment_status: string
           runner_id?: string | null
+          runner_lat?: number | null
+          runner_lng?: number | null
           subtotal: number
           tax: number
           total: number
@@ -119,9 +125,12 @@ export type Database = {
           estimated_delivery_at?: string | null
           id?: string
           items?: Json
+          last_location_update?: string | null
           payment_method?: string
           payment_status?: string
           runner_id?: string | null
+          runner_lat?: number | null
+          runner_lng?: number | null
           subtotal?: number
           tax?: number
           total?: number

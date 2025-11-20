@@ -21,10 +21,6 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
-      // Relax strict typing where the app intentionally uses `any` in UI glue code
-      "@typescript-eslint/no-explicit-any": "off",
-      // Allow empty-extends interfaces in generated/ui code (we'll prefer type aliases where easy)
-      "@typescript-eslint/no-empty-object-type": "off",
     },
   },
 );

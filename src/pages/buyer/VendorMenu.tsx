@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cartStorage } from '@/lib/storage';
 import { ArrowLeft, Star, Clock, Plus, Minus, ShoppingCart } from 'lucide-react';
-import { formatZMW } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
 
 const VendorMenu = () => {
   const { vendorId } = useParams();
@@ -132,7 +132,12 @@ const VendorMenu = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <motion.div 
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         {/* Back Button */}
         <Button
           variant="ghost"
@@ -190,10 +195,16 @@ const VendorMenu = () => {
                 <div key={category}>
                   <h2 className="text-2xl font-bold mb-4">{category}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {categoryItems.map(item => {
+                    {categoryItems.map((item, index) => {
                       const quantity = getItemQuantity(item.id);
                       return (
-                        <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                        >
+                          <Card className="overflow-hidden hover:shadow-lg transition-shadow card-hover">
                           <div className="relative h-40 overflow-hidden">
                             <img
                               src={item.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800'}
@@ -202,7 +213,7 @@ const VendorMenu = () => {
                             />
                             <div className="absolute top-2 right-2">
                               <Badge className="bg-black/60 text-white backdrop-blur-sm">
-                                {formatZMW(Number(item.price))}
+                                ${Number(item.price).toFixed(2)}
                               </Badge>
                             </div>
                           </div>
@@ -249,6 +260,7 @@ const VendorMenu = () => {
                             </div>
                           </CardContent>
                         </Card>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -271,7 +283,7 @@ const VendorMenu = () => {
             </Button>
           </div>
         )}
-      </div>
+      </motion.div>
     </Layout>
   );
 };

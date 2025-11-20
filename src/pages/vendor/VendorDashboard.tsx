@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { formatZMW } from '@/lib/utils';
 
 const VendorDashboard = () => {
   const navigate = useNavigate();
@@ -138,7 +137,7 @@ const VendorDashboard = () => {
 
   const activeOrders = orders.filter(o => ['pending', 'accepted', 'preparing', 'delivering'].includes(o.delivery_status));
   const completedOrders = orders.filter(o => o.delivery_status === 'delivered');
-  const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.subtotal || 0), 0);
+  const totalRevenue = completedOrders.reduce((sum, order) => sum + order.subtotal, 0);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -173,7 +172,7 @@ const VendorDashboard = () => {
               <DollarSign className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatZMW(Number(totalRevenue))}</div>
+              <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 From {completedOrders.length} orders
               </p>
@@ -242,7 +241,7 @@ const VendorDashboard = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-muted-foreground">Order Total</p>
-                        <p className="text-xl font-bold">{formatZMW(Number(order.subtotal))}</p>
+                        <p className="text-xl font-bold">${order.subtotal.toFixed(2)}</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -253,7 +252,7 @@ const VendorDashboard = () => {
                       {order.items.map((item, idx) => (
                         <div key={idx} className="flex justify-between text-sm">
                           <span>{item.quantity}x {item.name}</span>
-                          <span className="text-muted-foreground">{formatZMW(Number(item.price) * item.quantity)}</span>
+                          <span className="text-muted-foreground">${(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
@@ -337,7 +336,7 @@ const VendorDashboard = () => {
                         <Badge className="bg-success text-success-foreground" variant="outline">
                           Delivered
                         </Badge>
-                        <p className="text-sm font-semibold mt-1">{formatZMW(Number(order.subtotal))}</p>
+                        <p className="text-sm font-semibold mt-1">${order.subtotal.toFixed(2)}</p>
                       </div>
                     </div>
                   </CardHeader>

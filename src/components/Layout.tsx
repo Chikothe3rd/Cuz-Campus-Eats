@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, User, LogOut, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { signOut } from '@/services/auth';
 import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
@@ -15,7 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { cartStorage } from '@/lib/storage';
 
 interface LayoutProps {
   children: ReactNode;
@@ -51,35 +49,12 @@ export const Layout = ({ children }: LayoutProps) => {
         .eq('user_id', user.id)
         .single()
         .then(({ data }) => setUserRole(data?.role || null));
-
-      // Initialize cart count and subscribe to changes
-      const updateCartCount = () => {
-        const cart = cartStorage.get();
-        const count = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
-        setCartCount(count);
-      };
-      updateCartCount();
-
-      const onStorage = (e: StorageEvent) => {
-        if (!e.key || e.key === 'campus_food_cart') {
-          updateCartCount();
-        }
-      };
-      window.addEventListener('storage', onStorage);
-
-      return () => {
-        window.removeEventListener('storage', onStorage);
-      };
     }
   }, [user]);
 
   const handleLogout = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast.error(error || 'Failed to sign out');
-      return;
-    }
-    toast.success('Signed out successfully');
+    await supabase.auth.signOut();
+    toast.success('Logged out successfully');
     navigate('/');
   };
 

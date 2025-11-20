@@ -75,7 +75,6 @@ const Register = () => {
             name,
             phone,
             campus_name: campusName,
-            role, // Include role in metadata for trigger
           },
           emailRedirectTo: `${window.location.origin}/`,
         },
@@ -83,42 +82,8 @@ const Register = () => {
 
       if (authError) throw authError;
 
-      if (!authData.user) {
-        throw new Error('No user returned from signup');
-      }
-
-      // Check if email confirmation is required
-      const needsConfirmation = authData.user.confirmation_sent_at && !authData.user.email_confirmed_at;
-      
-      if (needsConfirmation) {
-        toast.success('Account created! Please check your email to confirm your account before logging in.');
-        // Sign out immediately if confirmation is needed
-        await supabase.auth.signOut();
-        // Redirect to login with a message
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-        return;
-      }
-
-      // Wait for profile creation trigger to complete
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      // Verify profile was created
-      const { data: profileRows, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', authData.user.id)
-        .limit(1);
-      if (profileError) {
-        console.warn('Profile fetch error:', profileError);
-      } else if (!profileRows || profileRows.length === 0) {
-        console.warn('Profile not found, trigger may have failed');
-      }
-
-      // Insert user role (with retry for race condition)
-      let roleInserted = false;
-      for (let attempt = 0; attempt < 3; attempt++) {
+      if (authData.user) {
+        // Insert user role
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({
@@ -126,49 +91,11 @@ const Register = () => {
             role: role,
           });
 
-        if (!roleError) {
-          roleInserted = true;
-          break;
-        }
+        if (roleError) throw roleError;
 
-        if (roleError.code === '23505') {
-          // Duplicate key - role already exists
-          roleInserted = true;
-          break;
-        }
-
-        console.error(`Role insert attempt ${attempt + 1} failed:`, roleError);
-        if (attempt < 2) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
+        toast.success(`Welcome to Campus Eats, ${name}!`);
+        navigate(`/${role}`);
       }
-
-      if (!roleInserted) {
-        toast.error('Account created but role assignment failed. Please contact support.');
-        return;
-      }
-
-      // Verify the role was inserted successfully
-      const { data: verifyRoles, error: verifyError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', authData.user.id)
-        .limit(1);
-      if (verifyError) {
-        console.error('Role verification error:', verifyError);
-        toast.error('Account created but role assignment failed. Please contact support.');
-        return;
-      }
-      if (!verifyRoles || verifyRoles.length === 0) {
-        toast.error('Role not found after insertion. Please contact support.');
-        return;
-      }
-
-      toast.success(`Welcome to Campus Eats, ${name}!`);
-      
-      // Wait for auth state to propagate through useAuth hook
-      await new Promise(resolve => setTimeout(resolve, 500));
-      navigate(`/${role}`);
     } catch (error: any) {
       console.error('Registration error:', error);
       toast.error(error.message || 'Failed to create account. Please try again.');

@@ -4,12 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Package, MapPin, DollarSign, TrendingUp, CheckCircle } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
-import { formatZMW } from '@/lib/utils';
 
 interface Order {
   id: string;
@@ -36,8 +34,6 @@ const RunnerDashboard = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [completedCount, setCompletedCount] = useState(0);
   const [totalEarnings, setTotalEarnings] = useState(0);
-  const { orders, loading: ordersLoading } = useRealtimeOrders(user?.id, 'runner');
-  const [vendorNames, setVendorNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!loading && !user) {
@@ -66,34 +62,36 @@ const RunnerDashboard = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    if (!user || userRole !== 'runner') return;
+    const loadOrders = async () => {
+      if (!user || userRole !== 'runner') return;
+      
+      // Load available orders
+      const { data: available } = await supabase
+        .from('orders')
+        .select('*, vendors(name)')
+        .is('runner_id', null)
+        .eq('delivery_status', 'pending')
+        .order('created_at', { ascending: false });
 
-    // Partition orders into available and mine
-    const available = (orders || []).filter(o => o.delivery_status === 'pending' && !o.runner_id) as Order[];
-    const mine = (orders || []).filter(o => o.runner_id === user.id && o.delivery_status !== 'delivered') as Order[];
-    setAvailableOrders(available);
-    setMyDeliveries(mine);
+      // Load my active deliveries
+      const { data: mine } = await supabase
+        .from('orders')
+        .select('*, vendors(name)')
+        .eq('runner_id', user.id)
+        .neq('delivery_status', 'delivered')
+        .order('created_at', { ascending: false });
 
-    // Stats
-    const delivered = (orders || []).filter(o => o.runner_id === user.id && o.delivery_status === 'delivered');
-    setCompletedCount(delivered.length);
-    setTotalEarnings(delivered.reduce((sum, o) => sum + Number(o.delivery_fee || 0), 0));
-  }, [orders, user, userRole]);
-
-  // Fetch vendor names for display
-  useEffect(() => {
-    const fetchVendorNames = async () => {
-      const ids = Array.from(new Set((orders || []).map(o => o.vendor_id))).filter(Boolean) as string[];
-      if (ids.length === 0) return;
-      const { data } = await supabase.from('vendors').select('id, name').in('id', ids);
-      if (data) {
-        const map: Record<string, string> = {};
-        data.forEach(v => (map[v.id] = v.name));
-        setVendorNames(map);
-      }
+      setAvailableOrders((available || []) as Order[]);
+      setMyDeliveries((mine || []) as Order[]);
     };
-    fetchVendorNames();
-  }, [orders]);
+
+    loadOrders();
+    
+    // Poll every 5 seconds for new orders
+    const interval = setInterval(loadOrders, 5000);
+    
+    return () => clearInterval(interval);
+  }, [user, userRole]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -136,7 +134,21 @@ const RunnerDashboard = () => {
     
     toast.success('Order accepted! The vendor will start preparing.');
     
-    // No manual refresh needed; realtime hook will update lists
+    // Refresh the lists
+    const { data: available } = await supabase
+      .from('orders')
+      .select('*, vendors(name)')
+      .is('runner_id', null)
+      .eq('delivery_status', 'pending');
+
+    const { data: mine } = await supabase
+      .from('orders')
+      .select('*, vendors(name)')
+      .eq('runner_id', user.id)
+      .neq('delivery_status', 'delivered');
+
+    setAvailableOrders((available || []) as Order[]);
+    setMyDeliveries((mine || []) as Order[]);
   };
 
   const updateStatus = async (orderId: string, status: string) => {
@@ -152,7 +164,14 @@ const RunnerDashboard = () => {
 
     toast.success(`Order status updated to ${status}`);
     
-    // Realtime hook will update lists
+    // Refresh
+    const { data: mine } = await supabase
+      .from('orders')
+      .select('*, vendors(name)')
+      .eq('runner_id', user.id)
+      .neq('delivery_status', 'delivered');
+
+    setMyDeliveries((mine || []) as Order[]);
   };
 
   const getStatusColor = (status: string) => {
@@ -181,7 +200,7 @@ const RunnerDashboard = () => {
               <DollarSign className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatZMW(Number(totalEarnings))}</div>
+              <div className="text-2xl font-bold">${totalEarnings.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 From {completedCount} deliveries
               </p>
@@ -221,7 +240,7 @@ const RunnerDashboard = () => {
             <h2 className="text-2xl font-bold mb-4">My Active Deliveries</h2>
             <div className="space-y-4">
               {myDeliveries.map(order => {
-                const vendorName = vendorNames[order.vendor_id] || 'Unknown Vendor';
+                const vendorName = order.vendors?.name || 'Unknown Vendor';
                 return (
                   <Card key={order.id} className="border-2 border-primary/20">
                     <CardHeader>
@@ -239,7 +258,7 @@ const RunnerDashboard = () => {
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-muted-foreground">Delivery Fee</p>
-                          <p className="text-xl font-bold text-success">{formatZMW(Number(order.delivery_fee))}</p>
+                          <p className="text-xl font-bold text-success">${Number(order.delivery_fee).toFixed(2)}</p>
                         </div>
                       </div>
                     </CardHeader>
@@ -304,7 +323,7 @@ const RunnerDashboard = () => {
           {availableOrders.length > 0 ? (
             <div className="space-y-4">
               {availableOrders.map(order => {
-                const vendorName = vendorNames[order.vendor_id] || 'Unknown Vendor';
+                const vendorName = order.vendors?.name || 'Unknown Vendor';
                 return (
                   <Card key={order.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
@@ -317,7 +336,7 @@ const RunnerDashboard = () => {
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-muted-foreground">You'll earn</p>
-                          <p className="text-xl font-bold text-success">{formatZMW(Number(order.delivery_fee))}</p>
+                          <p className="text-xl font-bold text-success">${Number(order.delivery_fee).toFixed(2)}</p>
                         </div>
                       </div>
                     </CardHeader>

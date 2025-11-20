@@ -1,164 +1,159 @@
 import { useEffect, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 interface DeliveryMapProps {
   onLocationSelect?: (address: string, lat: number, lng: number) => void;
   deliveryLocation?: { lat: number; lng: number; address: string };
-  searchAddress?: string;
 }
-const DeliveryMap = ({ onLocationSelect, deliveryLocation, searchAddress }: DeliveryMapProps) => {
+
+const DeliveryMap = ({ onLocationSelect, deliveryLocation }: DeliveryMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
-  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
-  const [ready, setReady] = useState(false);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Load Google Maps script
   useEffect(() => {
-    const apiKey = (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      console.error('Google Maps API key not found. Set VITE_GOOGLE_MAPS_API_KEY.');
+    if (!mapContainer.current || map.current) return;
+
+    const mapboxToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN;
+    
+    if (!mapboxToken) {
+      console.error('Mapbox token not found');
       return;
     }
 
-    const existing = document.getElementById('google-maps-js');
-    if (existing) {
-      // Already loaded
-      initMap();
-      return;
-    }
+    mapboxgl.accessToken = mapboxToken;
 
-    const script = document.createElement('script');
-    script.id = 'google-maps-js';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-  script.onload = () => initMap();
-    document.body.appendChild(script);
+    // Initialize map
+    const newMap = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: deliveryLocation ? [deliveryLocation.lng, deliveryLocation.lat] : [0, 0],
+      zoom: deliveryLocation ? 15 : 12,
+    });
 
-    function initMap() {
-      if (!mapContainer.current || mapRef.current) return;
-      const center = deliveryLocation
-        ? { lat: deliveryLocation.lat, lng: deliveryLocation.lng }
-        : { lat: -15.3875, lng: 28.3228 }; // Lusaka default
+    // Add navigation controls
+    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      // Create map with satellite imagery
-      const map = new (window as any).google.maps.Map(mapContainer.current, {
-        center,
-        zoom: deliveryLocation ? 15 : 13,
-        mapTypeId: 'satellite',
-        streetViewControl: false,
-        fullscreenControl: true,
-        mapTypeControl: false,
-      });
-  mapRef.current = map as unknown as google.maps.Map;
+    // Add geocoder search
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl as any,
+      marker: false,
+      placeholder: 'Search for delivery location...',
+    });
 
-      geocoderRef.current = new (window as any).google.maps.Geocoder();
+    newMap.addControl(geocoder);
 
-      // Place initial marker if provided
-      if (deliveryLocation) {
-        setMarker(center);
+    // Handle geocoder result
+    geocoder.on('result', (e) => {
+      const { center, place_name } = e.result;
+      if (onLocationSelect) {
+        onLocationSelect(place_name, center[1], center[0]);
       }
+      
+      // Update marker position
+      if (marker.current) {
+        marker.current.setLngLat(center);
+      } else {
+        marker.current = new mapboxgl.Marker({ color: '#FF6B6B', draggable: true })
+          .setLngLat(center)
+          .addTo(newMap);
 
-      // Click to place marker and reverse geocode
-      (map as any).addListener('click', (e: any) => {
-        const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-        setMarker(pos);
-        reverseGeocode(pos);
-      });
-      setReady(true);
-
-      // Helper: set or create marker and wire dragend
-      function setMarker(position: { lat: number; lng: number }) {
-        if (!markerRef.current) {
-          markerRef.current = new (window as any).google.maps.Marker({
-            position,
-            map,
-            draggable: true,
-          });
-          (markerRef.current as any).addListener('dragend', () => {
-            const pos = (markerRef.current as any).getPosition();
-            const coords = { lat: pos.lat(), lng: pos.lng() };
-            reverseGeocode(coords);
-          });
-        } else {
-          (markerRef.current as any).setPosition(position);
-        }
-      }
-
-      // Helper: reverse geocode and callback
-      function reverseGeocode(position: { lat: number; lng: number }) {
-        if (!geocoderRef.current) return;
-        (geocoderRef.current as any).geocode({ location: position }, (results: any, status: any) => {
-          if (status === 'OK' && results && results[0]) {
-            const addr = results[0].formatted_address;
-            if (onLocationSelect) onLocationSelect(addr, position.lat, position.lng);
-          }
+        // Handle marker drag
+        marker.current.on('dragend', () => {
+          const lngLat = marker.current!.getLngLat();
+          
+          // Reverse geocode to get address
+          fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.features && data.features.length > 0 && onLocationSelect) {
+                onLocationSelect(data.features[0].place_name, lngLat.lat, lngLat.lng);
+              }
+            });
         });
       }
-    }
+    });
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Add click handler to map
+    newMap.on('click', (e) => {
+      const { lng, lat } = e.lngLat;
+      
+      // Update or create marker
+      if (marker.current) {
+        marker.current.setLngLat([lng, lat]);
+      } else {
+        marker.current = new mapboxgl.Marker({ color: '#FF6B6B', draggable: true })
+          .setLngLat([lng, lat])
+          .addTo(newMap);
 
-  // If the parent passes a new address, geocode and update map
-  useEffect(() => {
-    if (!searchAddress || !mapRef.current || !geocoderRef.current) return;
-    (geocoderRef.current as any).geocode({ address: searchAddress }, (results: any, status: any) => {
-      if (status === 'OK' && results && results[0]) {
-        const loc = results[0].geometry.location;
-        const center = { lat: loc.lat(), lng: loc.lng() };
-        (mapRef.current as any).setCenter(center);
-        (mapRef.current as any).setZoom(16);
-        if (!markerRef.current) {
-          markerRef.current = new (window as any).google.maps.Marker({ map: mapRef.current, position: center, draggable: true });
-        } else {
-          (markerRef.current as any).setPosition(center);
-        }
+        marker.current.on('dragend', () => {
+          const lngLat = marker.current!.getLngLat();
+          
+          fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.features && data.features.length > 0 && onLocationSelect) {
+                onLocationSelect(data.features[0].place_name, lngLat.lat, lngLat.lng);
+              }
+            });
+        });
+      }
+
+      // Reverse geocode
+      fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.features && data.features.length > 0 && onLocationSelect) {
+            onLocationSelect(data.features[0].place_name, lat, lng);
+          }
+        });
+    });
+
+    newMap.on('load', () => {
+      setMapLoaded(true);
+      
+      // Add initial marker if delivery location exists
+      if (deliveryLocation) {
+        marker.current = new mapboxgl.Marker({ color: '#FF6B6B', draggable: true })
+          .setLngLat([deliveryLocation.lng, deliveryLocation.lat])
+          .addTo(newMap);
+
+        marker.current.on('dragend', () => {
+          const lngLat = marker.current!.getLngLat();
+          
+          fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.features && data.features.length > 0 && onLocationSelect) {
+                onLocationSelect(data.features[0].place_name, lngLat.lat, lngLat.lng);
+              }
+            });
+        });
       }
     });
-  }, [searchAddress]);
 
-  // When map becomes ready, sync to incoming address or coords
-  useEffect(() => {
-    if (!ready || !mapRef.current) return;
-    if (deliveryLocation) {
-      const center = { lat: deliveryLocation.lat, lng: deliveryLocation.lng };
-      (mapRef.current as any).setCenter(center);
-      (mapRef.current as any).setZoom(15);
-      if (!markerRef.current) {
-        markerRef.current = new (window as any).google.maps.Marker({ map: mapRef.current, position: center, draggable: true });
-      } else {
-        (markerRef.current as any).setPosition(center);
+    map.current = newMap;
+
+    return () => {
+      if (marker.current) {
+        marker.current.remove();
       }
-    } else if (searchAddress) {
-      // Trigger geocode for initial address if present
-      (geocoderRef.current as any)?.geocode({ address: searchAddress }, (results: any, status: any) => {
-        if (status === 'OK' && results && results[0]) {
-          const loc = results[0].geometry.location;
-          const center = { lat: loc.lat(), lng: loc.lng() };
-          (mapRef.current as any).setCenter(center);
-          (mapRef.current as any).setZoom(16);
-          if (!markerRef.current) {
-            markerRef.current = new (window as any).google.maps.Marker({ map: mapRef.current, position: center, draggable: true });
-          } else {
-            (markerRef.current as any).setPosition(center);
-          }
-        }
-      });
-    }
-  }, [ready]);
-
-  // Keep marker in sync if deliveryLocation prop changes later
-  useEffect(() => {
-    if (!mapRef.current || !deliveryLocation) return;
-    const center = { lat: deliveryLocation.lat, lng: deliveryLocation.lng };
-    (mapRef.current as any).panTo(center);
-    if (!markerRef.current) {
-      markerRef.current = new (window as any).google.maps.Marker({ map: mapRef.current, position: center, draggable: true });
-    } else {
-      (markerRef.current as any).setPosition(center);
-    }
-  }, [deliveryLocation?.lat, deliveryLocation?.lng]);
+      newMap.remove();
+    };
+  }, []);
 
   return (
     <div className="relative w-full h-full min-h-[400px] rounded-lg overflow-hidden border border-border">

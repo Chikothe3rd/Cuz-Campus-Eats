@@ -15,7 +15,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { formatZMW } from '@/lib/utils';
 
 const categories = ['Main Course', 'Appetizer', 'Dessert', 'Beverage', 'Side Dish'];
 
@@ -419,7 +418,7 @@ const VendorMenu = () => {
                             </CardDescription>
                           )}
                           <div className="flex items-center justify-between mb-3">
-                            <span className="text-2xl font-bold">{formatZMW(Number(item.price))}</span>
+                            <span className="text-2xl font-bold">${item.price.toFixed(2)}</span>
                             <span className="text-sm text-muted-foreground">{item.preparation_time} min</span>
                           </div>
                           <div className="flex gap-2">

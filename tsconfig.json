@@ -6,15 +6,11 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    // Limit global type packages to avoid conflicts (e.g., @types/jest vs Vitest)
-    "types": ["vitest/globals", "vite/client"],
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,
     "allowJs": true,
     "noUnusedLocals": false,
-    "strictNullChecks": false,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true
+    "strictNullChecks": false
   }
 }

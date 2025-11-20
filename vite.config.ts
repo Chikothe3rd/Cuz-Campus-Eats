@@ -15,25 +15,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    target: "es2018",
-    outDir: "dist",
-    sourcemap: mode === "development",
-    chunkSizeWarningLimit: 800,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          "react-vendor": ["react", "react-dom", "react-router-dom", "@tanstack/react-query"],
-          "radix-ui": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-toast",
-            "@radix-ui/react-tooltip",
-            "@radix-ui/react-navigation-menu"
-          ],
-          "supabase": ["@supabase/supabase-js"],
-        },
-      },
-    },
-  },
 }));

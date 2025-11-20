@@ -1,97 +1,98 @@
 import { Layout } from '@/components/Layout';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { cartStorage } from '@/lib/storage';
-import { ShoppingCart, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ArrowRight, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import DeliveryMap from '@/components/DeliveryMap';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
+  const { user } = useAuth();
   const [cart, setCart] = useState(cartStorage.get());
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryLat, setDeliveryLat] = useState<number | null>(null);
+  const [deliveryLng, setDeliveryLng] = useState<number | null>(null);
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [vendorGroups, setVendorGroups] = useState<any>({});
-
-  const formatZMW = (amount: number) =>
-    new Intl.NumberFormat('en-ZM', { style: 'currency', currency: 'ZMW' }).format(amount);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
     if (!user) {
       navigate('/login');
       return;
     }
 
-    const loadCart = async () => {
-      const items = await Promise.all(
-        cart.map(async (cartItem) => {
-          const { data: menuItem } = await supabase
-            .from('menu_items')
-            .select('*, vendors(*)')
-            .eq('id', cartItem.itemId)
-            .eq('is_available', true)
-            .single();
+  const loadCart = async () => {
+    const items = await Promise.all(
+      cart.map(async (cartItem) => {
+        const { data: menuItem } = await supabase
+          .from('menu_items')
+          .select('*, vendors(*)')
+          .eq('id', cartItem.itemId)
+          .eq('is_available', true)  // Only include available items
+          .single();
+        
+        return menuItem ? { ...menuItem, quantity: cartItem.quantity } : null;
+      })
+    );
 
-          return menuItem ? { ...menuItem, quantity: cartItem.quantity } : null;
-        })
-      );
+    const filtered = items.filter(Boolean);
+    
+    // Remove unavailable items from cart
+    const availableCartItems = cart.filter(cartItem => 
+      filtered.some(item => item?.id === cartItem.itemId)
+    );
+    
+    if (availableCartItems.length !== cart.length) {
+      setCart(availableCartItems);
+      cartStorage.set(availableCartItems);
+      toast.info('Some items were removed as they are no longer available');
+    }
+    
+    setCartItems(filtered);
 
-      const filtered = items.filter(Boolean) as any[];
-
-      const availableCartItems = cart.filter((cartItem) =>
-        filtered.some((item: any) => item?.id === cartItem.itemId)
-      );
-
-      if (availableCartItems.length !== cart.length) {
-        setCart(availableCartItems);
-        cartStorage.set(availableCartItems);
-        toast.info('Some items were removed as they are no longer available');
+    // Group by vendor
+    const groups = filtered.reduce((acc: any, item: any) => {
+      if (!acc[item.vendor_id]) {
+        acc[item.vendor_id] = {
+          vendor: item.vendors,
+          items: [],
+        };
       }
+      acc[item.vendor_id].items.push(item);
+      return acc;
+    }, {});
 
-      setCartItems(filtered);
-
-      const groups = filtered.reduce((acc: any, item: any) => {
-        if (!acc[item.vendor_id]) {
-          acc[item.vendor_id] = {
-            vendor: item.vendors,
-            items: [],
-          };
-        }
-        acc[item.vendor_id].items.push(item);
-        return acc;
-      }, {});
-
-      setVendorGroups(groups);
-    };
-
-    loadCart();
-  }, [cart, user, loading, navigate]);
+    setVendorGroups(groups);
+  };    loadCart();
+  }, [cart, user, navigate]);
 
   const updateQuantity = (itemId: string, change: number) => {
-    const newCart = cart
-      .map((item) => (item.itemId === itemId ? { ...item, quantity: Math.max(0, item.quantity + change) } : item))
-      .filter((item) => item.quantity > 0);
-
+    const newCart = cart.map(item =>
+      item.itemId === itemId
+        ? { ...item, quantity: Math.max(0, item.quantity + change) }
+        : item
+    ).filter(item => item.quantity > 0);
+    
     setCart(newCart);
     cartStorage.set(newCart);
   };
 
   const removeItem = (itemId: string) => {
-    const newCart = cart.filter((item) => item.itemId !== itemId);
+    const newCart = cart.filter(item => item.itemId !== itemId);
     setCart(newCart);
     cartStorage.set(newCart);
     toast.success('Item removed from cart');
@@ -112,32 +113,42 @@ const Cart = () => {
     }
 
     if (!deliveryAddress.trim()) {
-      toast.error('Please enter a delivery address');
+      toast.error('Please select a delivery location on the map');
       return;
     }
 
+    if (!deliveryLat || !deliveryLng) {
+      toast.error('Please select a valid location on the map');
+      return;
+    }
+
+    // Validate minimum order amount
     const allTotals = calculateTotals(cartItems);
-    if (allTotals.subtotal < 5.0) {
-      toast.error(`Minimum order amount is ${formatZMW(5.0)}`);
+    if (allTotals.subtotal < 5.00) {
+      toast.error('Minimum order amount is $5.00');
       return;
     }
 
     setIsProcessing(true);
 
     try {
+      // Verify all vendors are still active
       const vendorIds = Object.keys(vendorGroups);
       const { data: activeVendors } = await supabase
         .from('vendors')
         .select('id, is_active')
         .in('id', vendorIds);
-
-      const inactiveVendors = vendorIds.filter((id) => !activeVendors?.find((v) => v.id === id && v.is_active));
-
+      
+      const inactiveVendors = vendorIds.filter(id => 
+        !activeVendors?.find(v => v.id === id && v.is_active)
+      );
+      
       if (inactiveVendors.length > 0) {
         toast.error('Some vendors are no longer available. Please refresh your cart.');
         return;
       }
 
+      // Create separate orders for each vendor
       const orderPromises = Object.values(vendorGroups).map(async (group) => {
         const { vendor, items } = group as any;
         const totals = calculateTotals(items);
@@ -159,8 +170,8 @@ const Cart = () => {
           payment_method: paymentMethod,
           delivery_status: 'pending',
           delivery_address: deliveryAddress,
-          delivery_lat: null,
-          delivery_lng: null,
+          delivery_lat: deliveryLat,
+          delivery_lng: deliveryLng,
           delivery_notes: deliveryNotes || null,
           estimated_delivery_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         });
@@ -170,11 +181,12 @@ const Cart = () => {
 
       await Promise.all(orderPromises);
 
+      // Clear cart
       cartStorage.clear();
       setCart([]);
-
-  toast.success('Order placed successfully!');
-  navigate('/buyer', { replace: true });
+      
+      toast.success('Order placed successfully!');
+      navigate('/buyer/orders');
     } catch (error: any) {
       console.error('Checkout error:', error);
       if (error?.message?.includes('violates foreign key constraint')) {
@@ -196,7 +208,9 @@ const Cart = () => {
           <ShoppingCart className="h-24 w-24 text-muted-foreground mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
           <p className="text-muted-foreground mb-6">Add some delicious food to get started!</p>
-          <Button onClick={() => navigate('/buyer/vendors')}>Browse Vendors</Button>
+          <Button onClick={() => navigate('/buyer/vendors')}>
+            Browse Vendors
+          </Button>
         </div>
       </Layout>
     );
@@ -224,7 +238,7 @@ const Cart = () => {
                   <CardTitle className="flex items-center justify-between">
                     <span>{vendor.name}</span>
                     <span className="text-base font-normal text-muted-foreground">
-                      {formatZMW(vendorTotals.total)}
+                      ${vendorTotals.total.toFixed(2)}
                     </span>
                   </CardTitle>
                 </CardHeader>
@@ -238,7 +252,7 @@ const Cart = () => {
                       />
                       <div className="flex-1">
                         <h3 className="font-semibold">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground">{formatZMW(item.price)} each</p>
+                        <p className="text-sm text-muted-foreground">${item.price.toFixed(2)} each</p>
                         <div className="flex items-center gap-3 mt-2">
                           <div className="flex items-center gap-2">
                             <Button
@@ -269,7 +283,7 @@ const Cart = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">{formatZMW(item.price * item.quantity)}</p>
+                        <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -287,12 +301,37 @@ const Cart = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="address">Delivery Address</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Delivery Location</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowMap(!showMap)}
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
+                    {showMap ? 'Hide Map' : 'Select on Map'}
+                  </Button>
+                </div>
+                
+                {showMap && (
+                  <div className="h-[300px] mt-2">
+                    <DeliveryMap
+                      onLocationSelect={(address, lat, lng) => {
+                        setDeliveryAddress(address);
+                        setDeliveryLat(lat);
+                        setDeliveryLng(lng);
+                        toast.success('Location selected');
+                      }}
+                    />
+                  </div>
+                )}
+                
                 <Input
                   id="address"
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
-                  placeholder="Enter delivery address"
+                  placeholder="Select location on map or type address"
+                  readOnly={showMap}
                 />
               </div>
 
@@ -307,7 +346,7 @@ const Cart = () => {
                 />
               </div>
 
-              <div className="space-y-2">
+               <div className="space-y-2">
                 <Label>Payment Method</Label>
                 <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'cash' | 'card')}>
                   <div className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-accent/5">
@@ -334,20 +373,20 @@ const Cart = () => {
             <CardContent className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatZMW(allTotals.subtotal)}</span>
+                <span>${allTotals.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax (8%)</span>
-                <span>{formatZMW(allTotals.tax)}</span>
+                <span>${allTotals.tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Delivery Fee</span>
-                <span>{formatZMW(allTotals.deliveryFee)}</span>
+                <span>${allTotals.deliveryFee.toFixed(2)}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>{formatZMW(allTotals.total)}</span>
+                <span>${allTotals.total.toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>

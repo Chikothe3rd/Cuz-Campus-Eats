@@ -8,7 +8,6 @@ import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealtimeOrders } from '@/hooks/useRealtimeOrders';
 import { supabase } from '@/integrations/supabase/client';
-import { formatZMW } from '@/lib/utils';
 
 const Orders = () => {
   const navigate = useNavigate();
@@ -122,7 +121,7 @@ const Orders = () => {
                           <Badge className={getStatusColor(order.delivery_status)}>
                             {order.delivery_status}
                           </Badge>
-                          <p className="text-lg font-bold mt-2">{formatZMW(Number(order.total))}</p>
+                          <p className="text-lg font-bold mt-2">${Number(order.total).toFixed(2)}</p>
                         </div>
                       </div>
                     </CardHeader>
@@ -175,7 +174,7 @@ const Orders = () => {
                           <Badge className={getStatusColor(order.delivery_status)} variant="outline">
                             {order.delivery_status}
                           </Badge>
-                          <p className="font-semibold mt-2">{formatZMW(Number(order.total))}</p>
+                          <p className="font-semibold mt-2">${Number(order.total).toFixed(2)}</p>
                         </div>
                       </div>
                     </CardHeader>
