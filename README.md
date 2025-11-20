@@ -53,6 +53,13 @@ Populate these in your deployment UI (never commit secrets):
 | `VITE_GOOGLE_MAPS_API_KEY`   | Enables map for delivery location selection |
 | `VITE_SENTRY_DSN` (optional) | Error monitoring integration                |
 
+### Supabase Database Setup
+
+1. Open the Supabase dashboard for your project (`https://argfskhwqxyvirxrybqj.supabase.co`).
+2. Navigate to **SQL Editor** and run the script in `supabase/full_schema.sql` to create tables, RLS policies, and the storage bucket.
+3. (Optional) Seed data by running custom SQL/inserts after the schema script.
+4. Verify the health page at `/health` and diagnostics at `/setup` report green status.
+
 ### Recommended Production Steps
 
 1. Set all environment variables (.env in local, deploy UI in prod).

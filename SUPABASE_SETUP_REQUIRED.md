@@ -1,12 +1,28 @@
 # URGENT: Supabase Connection Fix
 
-## Current Issue
+## Current Setup
 
-The Supabase project `spvafnlvtdtkztflxzow.supabase.co` **does not exist or has been deleted**.
+You now have an active Supabase project at:
 
-DNS lookup confirms: `Non-existent domain`
+- URL: `https://argfskhwqxyvirxrybqj.supabase.co`
+- anon key: stored in `.env`
 
-## Quick Fix - Two Options
+If you ever rotate credentials, update `.env` to keep the app connected.
+
+## Provisioning the Database
+
+The repo contains a consolidated schema script at `supabase/full_schema.sql`. Run it once inside the Supabase SQL Editor (or via `supabase db execute`) to create all tables, RLS policies, triggers, and the storage bucket.
+
+### Steps
+
+1. Open the Supabase Dashboard → SQL Editor
+2. Paste the entire contents of `supabase/full_schema.sql`
+3. Click **Run**
+4. Verify tables appear under the `public` schema
+
+> The individual migration files remain useful for incremental updates, but the consolidated script is the fastest way to bootstrap a new project.
+
+## Alternate Setup Options
 
 ### Option 1: Create New Supabase Cloud Project (5 minutes)
 
@@ -39,11 +55,9 @@ DNS lookup confirms: `Non-existent domain`
 5. **Run migrations**
 
    ```powershell
-   # Install Supabase CLI (Windows - use Scoop or download binary)
-   # See: https://github.com/supabase/cli#windows
-
-   # Or manually copy SQL from supabase/migrations/*.sql
-   # and run them in Supabase Dashboard → SQL Editor
+   # Option A: use the consolidated script
+   #   supabase/full_schema.sql (recommended)
+   # Option B: run each migration file sequentially
    ```
 
 6. **Restart dev server**
@@ -107,16 +121,9 @@ Should show:
 - ✅ Profiles Query: OK
 - ✅ Status: Healthy (green checkmark)
 
-## Manual Migration (If you don't have Supabase CLI)
+## Manual Migration (If you need individual files)
 
-Go to your Supabase Dashboard → SQL Editor and run these files in order:
-
-1. `supabase/migrations/20251007073445_58434222-ff96-47d7-9a62-4b0a64092149.sql`
-2. `supabase/migrations/20251016140118_e4c5a579-4f40-445c-9846-8c70dd111350.sql`
-3. `supabase/migrations/20251017093116_7f45e572-3643-4d23-ba12-0835807a7fe0.sql`
-4. `supabase/migrations/20251017093255_f95ae315-e7f8-4bae-ac30-d14f3362bf9e.sql`
-5. `supabase/migrations/20251017093916_5d483d21-0ac8-4277-a20e-ab5f5eac9dfd.sql`
-6. `supabase/migrations/20251102053630_20e2aae0-359b-4329-86bf-6140c0098dd7.sql`
+Use the six SQL files under `supabase/migrations/` in chronological order.
 
 ## Why This Happened
 
