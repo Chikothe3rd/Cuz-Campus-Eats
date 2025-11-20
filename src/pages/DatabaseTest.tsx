@@ -85,7 +85,7 @@ const DatabaseTest = () => {
             <p className="text-muted-foreground">Checking database connection...</p>
           )}
 
-          {status === 'success' && (
+          {status === 'success' && details && (
             <div className="space-y-2">
               <p className="text-green-600 font-medium">✓ Connection successful!</p>
               <div className="bg-muted p-4 rounded-lg space-y-1 text-sm">
