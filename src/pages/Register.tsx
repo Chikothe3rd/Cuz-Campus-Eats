@@ -10,6 +10,7 @@ import { ArrowLeft, ShoppingBag, Store, Bike } from 'lucide-react';
 import { mapAuthError } from '@/lib/utils';
 import { signUpWithProfileAndRole } from '@/services/auth';
 import { withRetry } from '@/lib/retry';
+import { supabase } from '@/lib/supabase';
 
 type UserRole = 'buyer' | 'vendor' | 'runner';
 
