@@ -2,30 +2,28 @@
 
 A web platform that allows Cavendish University students and staff to browse menus, place food orders, and track deliveries from the campus cafeteria and student vendors.
 
-
-
 ## ✅ Key Features
-- Browse daily menus with prices & vendor info  
-- Order food online (pickup or delivery)  
-- Track order status in real time  
-- Multiple vendors (cafeteria + student businesses)  
-- User roles: Student, Staff, Vendor, Admin  
-- Admin dashboard for managing menus, users & orders  
-- Mobile-friendly interface  
 
-
+- Browse daily menus with prices & vendor info
+- Order food online (pickup or delivery)
+- Track order status in real time
+- Multiple vendors (cafeteria + student businesses)
+- User roles: Student, Staff, Vendor, Admin
+- Admin dashboard for managing menus, users & orders
+- Mobile-friendly interface
 
 ## 🛠️ Tech Stack (Editable)
-| Layer | Option |
-|-------|--------|
-| Frontend | React / vite / Vue |
-| Backend | Laravel / FastAPI / Node.js |
-| Database | supabase |
-| Auth | JWT / University Login |
-| Deployment |netlifly |
 
+| Layer      | Option                      |
+| ---------- | --------------------------- |
+| Frontend   | React / vite / Vue          |
+| Backend    | Laravel / FastAPI / Node.js |
+| Database   | supabase                    |
+| Auth       | JWT / University Login      |
+| Deployment | netlifly                    |
 
 ## 🚀 Quick Setup
+
 ```bash
 git clone https://github.com/your-username/campus-food-ordering.git
 cd campus-food-ordering
@@ -33,3 +31,50 @@ pnpm install   # or npm install / yarn install
 cp .env.example .env
 pnpm dev       # or npm run dev
 
+```
+
+## 📦 Production Build
+
+```bash
+pnpm build
+pnpm preview   # Serves dist locally on http://localhost:4173 by default
+```
+
+Deploy the contents of `dist/` to a static host (Netlify, Vercel, Cloudflare Pages, S3+CloudFront, etc.).
+
+### Environment Variables
+
+Populate these in your deployment UI (never commit secrets):
+
+| Variable                     | Purpose                                     |
+| ---------------------------- | ------------------------------------------- |
+| `VITE_SUPABASE_URL`          | Supabase project base URL                   |
+| `VITE_SUPABASE_ANON_KEY`     | Public anon key for client access           |
+| `VITE_GOOGLE_MAPS_API_KEY`   | Enables map for delivery location selection |
+| `VITE_SENTRY_DSN` (optional) | Error monitoring integration                |
+
+### Recommended Production Steps
+
+1. Set all environment variables (.env in local, deploy UI in prod).
+2. Run `pnpm build` and inspect bundle sizes; adjust manualChunks if needed.
+3. Enable HTTPS on your hosting platform.
+4. Add a custom domain (e.g., `campuseats.example.com`).
+5. Configure caching: immutable for `assets/*`, short cache for `index.html`.
+6. Add security headers (CSP, X-Frame-Options, Strict-Transport-Security).
+7. Monitor errors (Sentry/PostHog) & performance (Web Vitals / analytics).
+
+### Troubleshooting Blank Screen
+
+If you see a blank page:
+
+1. Ensure you are visiting the correct dev port: the project uses port `8080` (`http://localhost:8080`).
+2. Check browser console for runtime errors (now surfaced via the ErrorBoundary).
+3. Verify that `.env` contains valid Supabase keys.
+4. Confirm Google Maps API key is set if map features are used.
+5. Clear service worker or hard refresh (Ctrl+Shift+R) if caching was previously enabled.
+
+### Future Enhancements
+
+- Add offline/PWA support (service worker + manifest icons).
+- Integrate role-based analytics for usage patterns.
+- Implement vendor menu image optimization (responsive, lazy load).
