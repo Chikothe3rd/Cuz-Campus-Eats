@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { ArrowLeft, ShoppingBag, Store, Bike } from 'lucide-react';
 import { mapAuthError } from '@/lib/utils';
-import { signUpWithProfileAndRole } from '@/services/auth';
+import { signUpWithProfileAndRole, signIn } from '@/services/auth';
 import { withRetry } from '@/lib/retry';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -83,6 +83,20 @@ const Register = () => {
       });
       if (result.error) throw new Error(result.error);
       toast.success(`Welcome to Campus Eats, ${name}!`);
+
+      // Ensure the user is signed in immediately after registration when possible
+      const signin = await signIn(email, password);
+      if (signin.error) {
+        const msg = signin.error.toLowerCase();
+        if (msg.includes('confirm') || msg.includes('email not confirmed') || msg.includes('verification')) {
+          toast.info('Check your email to verify your account, then sign in.');
+          navigate('/login');
+        } else {
+          toast.error(signin.error);
+        }
+        return;
+      }
+
       navigate(`/${role}`);
     } catch (error: unknown) {
       console.error('Registration error:', error);
