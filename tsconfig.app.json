@@ -15,7 +15,8 @@
     "jsx": "react-jsx",
 
   // Make Vitest globals like describe/it/expect available in editor tooling
-  "types": ["vitest/globals", "vite/client"],
+  // Include Google Maps global namespace typings
+  "types": ["vitest/globals", "vite/client", "google.maps"],
 
     /* Linting */
     "strict": false,

@@ -13,11 +13,15 @@ const DatabaseTest = () => {
     setStatus('checking');
     setError('');
     setDetails(null);
+    const envUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+    const envKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY) as
+      | string
+      | undefined;
 
     try {
-      // Test 1: Check if Supabase client is initialized
-      console.log('Supabase URL:', supabase.supabaseUrl);
-      console.log('Supabase Key exists:', !!supabase.supabaseKey);
+      // Test 1: Check if Supabase env is configured
+      console.log('Supabase URL:', envUrl);
+      console.log('Supabase Key exists:', !!envKey);
 
       // Test 2: Try to fetch from a public table
       const { data, error: fetchError } = await supabase
@@ -37,8 +41,8 @@ const DatabaseTest = () => {
       }
 
       setDetails({
-        url: supabase.supabaseUrl,
-        hasKey: !!supabase.supabaseKey,
+        url: envUrl || 'Not configured',
+        hasKey: !!envKey,
         canQueryDB: true,
         session: sessionData.session ? 'Active' : 'No active session',
         user: sessionData.session?.user?.email || 'Not logged in'
@@ -51,8 +55,8 @@ const DatabaseTest = () => {
       setStatus('error');
       
       setDetails({
-        url: supabase.supabaseUrl,
-        hasKey: !!supabase.supabaseKey,
+        url: envUrl || 'Not configured',
+        hasKey: !!envKey,
         error: err instanceof Error ? err.message : String(err)
       });
     }
